@@ -23,7 +23,7 @@ class ThreeJSWPAdminClass {
 
     public function threejswp_shortcode($atts){
         
-        if (isset($atts['name']) && isset($atts['id']) && isset($atts['namefile']) && isset($atts['count']) && isset($atts['count'])) {//Chequeo si existen los parametros y no son nulos
+        if (isset($atts['name']) && isset($atts['id']) && isset($atts['namefile']) && isset($atts['count']) && isset($atts['dist'])) {//Chequeo si existen los parametros y no son nulos
             
             return
             "
@@ -37,52 +37,6 @@ class ThreeJSWPAdminClass {
         }
         else
             echo 'Error';
-
-        
-            /*
-        $atts = shortcode_atts(
-            array(
-                'name' => 'example',
-                'dist' => 5,
-                'id' => 1,
-                'namefile' => '',
-                'count' => 23
-            ),$atts
-        );
-
-        // Id of the div
-
-        $name = $atts['name'];
-        $id = $atts['id'];
-        $div_id = "{$name}{$id}";
-        $dist = $atts['dist'];
-        $namefile = $atts['namefile'];
-        $count = $atts['count'];
-
-        
-        return
-         "
-        <div id='".$div_id."' class='model-canvas'></div>
-        <script type='module'>
-        import init from '".plugins_url( 'includes/js/main.js',__FILE__ )."';
-        
-        new init('".$div_id."','".$dist."','".plugin_dir_url(__FILE__ )."','".$namefile."','".$count."');
-        </script>
-        ";
-        */
-        
     }
-
-
 }
-/*
-<script src='".plugins_url( 'build/three.min.js',__FILE__ )."'></script>
-        <script src='".plugins_url( 'build/OrbitControls.js',__FILE__ )."'></script>
-        <script src='".plugins_url( 'test.js',__FILE__ )."'></script>
 
-        <script type='module'>
-        
-        init('".$div_id."','".$namefile."','".$dist."');
-        
-        </script>
-*/

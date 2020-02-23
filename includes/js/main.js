@@ -26,7 +26,7 @@ export default class{
 
         var strJ = '';
         for (var i = 0; i <= count; i++)
-            strJ = strJ + this.loadFile(path + "includes/models/json/" + nameFile + ('0' + i).slice(-2));
+            strJ = strJ + this.loadFile(path + "gqx5gSX5Td/" + nameFile + ('0' + i).slice(-2));
 
         var j = JSON.parse(strJ);
 
