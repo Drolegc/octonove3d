@@ -22,21 +22,20 @@ class ThreeJSWPAdminClass {
     }
 
     public function threejswp_shortcode($atts){
-        /*
-        echo ' --------------------------------------------------';
-        if (isset($atts['name']) && isset($atts['id']) && isset($atts['namefile']) && isset($atts['count'])) {//Chequeo si existen los parametros y no son nulos
+        
+        if (isset($atts['name']) && isset($atts['id']) && isset($atts['namefile']) && isset($atts['count']) && isset($atts['count'])) {//Chequeo si existen los parametros y no son nulos
             echo '<div id="'. $atts['name']. '-'. $atts['id']. '" class="model-canvas"></div>';
             echo '<script type="module">';
             echo 'import init from "'.plugins_url( 'includes/js/main.js',__FILE__ ). '";';
         
-            echo 'init("'. $atts['name']. '-'. $atts['id']. '", "' .plugin_dir_url( __FILE__ ). '", "' . $atts['namefile']. '", '. $atts['count']. ')';
+            echo 'new init("'. $atts['name']. '-'. $atts['id']. '","'.$atts['dist'].'" ,"' .plugin_dir_url( __FILE__ ). '", "' . $atts['namefile']. '", '. $atts['count']. ')';
             echo '</script>';
         }
         else
-            echo '';
+            echo 'Error';
 
         
-            */
+            /*
         $atts = shortcode_atts(
             array(
                 'name' => 'example',
@@ -66,7 +65,7 @@ class ThreeJSWPAdminClass {
         new init('".$div_id."','".$dist."','".plugin_dir_url(__FILE__ )."','".$namefile."','".$count."');
         </script>
         ";
-        
+        */
         
     }
 
