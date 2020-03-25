@@ -3,7 +3,7 @@
   Plugin name: THREEJSWP OCTONOVE
   Plugin URI: http://PLUGIN_URI.com/
   Description: Three JS with Wordpress 
-  Author: AUTHOR_NAME
+  Author: Octonove Agency
   Author URI: http://AUTHOR_URI.com
   Version: 1.5
   */
@@ -15,5 +15,40 @@
   }
 
   $var = new ThreeJSWPAdminClass();
+
+  // Activation
+  register_activation_hook( __FILE__, 'activate' );
+  // Uninstall
+  register_uninstall_hook( __FILE__, 'uninstall' );
+
+  function activate(){
+
+    global $wpdb;
+
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE json_models_path (
+        models_name varchar(55) NOT NULL,
+        path_file varchar(100) NOT NULL,
+        UNIQUE KEY models_name (models_name)
+    ) $charset_collate;";
+
+    if ( ! function_exists('dbDelta') ) {
+        require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+    }
+
+    dbDelta( $sql );
+
+    flush_rewrite_rules();
+
+  }
+
+  function uninstall(){
+    global $wpdb;
+     $table_name = $wpdb->prefix . 'json_models_path';
+     $sql = "DROP TABLE IF EXISTS $table_name";
+     $wpdb->query($sql);
+  }
+
 
 ?>

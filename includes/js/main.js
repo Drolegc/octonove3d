@@ -3,9 +3,9 @@ import { OrbitControls } from '../build/OrbitControls.js';
 
 export default class{
 
-    constructor(id,dist,path,nameFile,count){
+    constructor(name,dist,path){
 
-        this.container = document.getElementById(id);
+        this.container = document.getElementById(name);
 
         var height = this.container.getBoundingClientRect().height;
         var width = this.container.getBoundingClientRect().width;
@@ -24,11 +24,7 @@ export default class{
 
         var objectLoader = new THREE.ObjectLoader();
 
-        var strJ = '';
-        for (var i = 0; i <= count; i++)
-            strJ = strJ + this.loadFile(path + "gqx5gSX5Td/" + nameFile + ('0' + i).slice(-2));
-
-        var j = JSON.parse(strJ);
+        var strJ = this.loadFile(path);
 
         this.loader(this.scene,objectLoader,strJ);
 
@@ -39,8 +35,6 @@ export default class{
         this.renderer = new THREE.WebGLRenderer( { alpha:true,canvas:canvas });
         this.renderer.setSize(canvas.width,canvas.height);
         this.container.appendChild(canvas);
-        //this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
-        //this.container.appendChild(this.renderer.domElement);
 
         this.control = new OrbitControls(this.camera, this.renderer.domElement);
         this.control.autoRotate = true;
