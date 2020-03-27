@@ -61,6 +61,9 @@ class ThreeJSWPAdminClass {
     }
 
     public function list_models(){
+
+        $this->delete_handle_post();
+
         global $wpdb;
         $models = $wpdb->get_results(
             "SELECT * FROM json_models_path"
@@ -72,7 +75,15 @@ class ThreeJSWPAdminClass {
             echo "There is no models yet";
         }
         foreach($models as $model){
-            echo "<p>$model->models_name</p><p>$model->path_file</p>";
+            ?>
+            <form action="" method='post' name='myform' enctype='multipart/form-data'>
+            <label for='model_name'>Name </label>
+        <input type='text' id='model_name' name='model_name' value="<?echo $model->models_name?>" />
+        <label for='path'>Path </label>
+        <input type='text' id='path' name='path' value="<?echo $model->path_file?>" />
+        <input type="submit" value="Delete">
+            </form>
+            <?
         }
         echo "</div>";
     }
@@ -83,8 +94,7 @@ class ThreeJSWPAdminClass {
         <h2>About THREEJS Octonove</h2>
         <p>
         Fusce vulputate eleifend sapien. Fusce fermentum.
-
-Sed in libero ut nibh placerat accumsan. Sed in libero ut nibh placerat accumsan.
+        Sed in libero ut nibh placerat accumsan. Sed in libero ut nibh placerat accumsan.
         </p>
         </div>
         <?
@@ -103,12 +113,34 @@ Sed in libero ut nibh placerat accumsan. Sed in libero ut nibh placerat accumsan
         <label for="model_name">Model's name </label>
         <input type="text" id="model_name" name="model_name">
         <input type="file" id='upload_json' name='upload_json' accept=".json">
-        <? submit_button('Upload') ?>
+        <input type="submit" value="Upload">
         </form>
        </div>
        <?
     }
 
+    private function delete_handle_post(){
+
+        if(isset($_POST['model_name']) && isset($_POST['path'])){
+            global $wpdb;
+            try{
+
+                $upload_info = wp_get_upload_dir();
+                $model_file = explode('uploads',$_POST['path']);
+                $file = $upload_info['basedir'] . end($model_file);
+
+                wp_delete_file( $file);
+
+                $wpdb->query(
+                    "DELETE FROM json_models_path WHERE models_name = '".$_POST['model_name']."';"
+                );
+
+                echo "Models deleted";
+            }catch (Exception $e){
+                throw new Exception("Model ".$_POST['model_name']."does not exist.");
+            }
+        }
+    }
 
     private function test_handle_post(){
 
