@@ -75,12 +75,13 @@ class ThreeJSWPAdminClass {
             echo "There is no models yet";
         }
         foreach($models as $model){
+            $split = explode('uploads',$model->path_file);
             ?>
             <form action="" method='post' name='myform' enctype='multipart/form-data'>
             <label for='model_name'>Name </label>
         <input type='text' id='model_name' name='model_name' value="<?echo $model->models_name?>" />
         <label for='path'>Path </label>
-        <input type='text' id='path' name='path' value="<?echo $model->path_file?>" />
+        <input type='text' id='path' name='path' value="<?echo "uploads".end($split);?>" />
         <input type="submit" value="Delete">
             </form>
             <?
