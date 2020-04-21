@@ -29,7 +29,8 @@
 
     $sql = "CREATE TABLE json_models_path (
         models_name varchar(55) NOT NULL,
-        path_file varchar(100) NOT NULL,
+        path_file varchar(300) NOT NULL,
+        size INT,
         UNIQUE KEY models_name (models_name)
     ) $charset_collate;";
 

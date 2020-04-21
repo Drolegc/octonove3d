@@ -3,7 +3,7 @@ import { OrbitControls } from '../build/OrbitControls.js';
 
 export default class{
 
-    constructor(name,dist,path){
+    constructor(name,dist,path,size){
 
         this.container = document.getElementById(name);
 
@@ -24,7 +24,12 @@ export default class{
 
         var objectLoader = new THREE.ObjectLoader();
 
-        var strJ = this.loadFile(path);
+        //var strJ = this.loadFile(path + );
+        var strJ = "";
+
+        for(var i = 0;i<size;i++){
+            strJ = strJ.concat(this.loadFile(path + "00" +i))
+        }
 
         this.loader(this.scene,objectLoader,strJ);
 

@@ -1,5 +1,7 @@
 <?
 
+include 'phpfsplit.php';
+
 class ThreeJSWPAdminClass {
 
     public function __construct(){
@@ -32,7 +34,7 @@ class ThreeJSWPAdminClass {
 
     public function threejswp_shortcode($atts){
         
-        if (isset($atts['name']) && isset($atts['dist'])) {//Chequeo si existen los parametros y no son nulos
+        if (isset($atts['name']) && isset($atts['dist'])) {
 
             $model = $this->getModel($atts['name']);
             
@@ -42,7 +44,7 @@ class ThreeJSWPAdminClass {
             <script type='module'>
             import init from '".plugins_url( 'includes/js/main.js',__FILE__ )."';
             
-            new init('". $atts['name']."','".$atts['dist']."','".$model->path_file."');
+            new init('". $atts['name']."','".$atts['dist']."','".$model->path_file."','".$model->size."');
             </script>
             ";
         }
@@ -146,18 +148,31 @@ class ThreeJSWPAdminClass {
     private function test_handle_post(){
 
         if(isset($_FILES['upload_json'])){
-            $json = $_FILES['upload_json'];
+            // Obtenemos el archivo .json
+            $json_file = $_FILES['upload_json'];
             $overrides = array( 'test_form' => false );
-
-            $uploaded=wp_handle_upload($json,$overrides);
-
-            $path_file = $uploaded['url'];
+            // Subimos el archivo 
+            $uploaded = wp_handle_upload($json_file,$overrides);
+            // Obtenemos el path
+            $path_file = $uploaded['file'];
 
             $models_name = $_POST['model_name'];
+            // Creamos un directorio con nombre el nombre del modelo+'_dir'
+            $dir_name = md5($models_name.'_dir');
+            
+            wp_mkdir_p( wp_upload_dir()['basedir'].'/'.$dir_name );
+
+            $models_dir = wp_upload_dir()['basedir'].'/'.$dir_name.'/';
+
+            // localhost/path/to/dir/0sx3vk1
+            $data_file_count = $this->split_file($path_file,$models_dir);
+
+            $new_path_file_id = $data_file_count["file_name"];
+
+            $dir_file = wp_upload_dir()['baseurl'].'/'.$dir_name.'/'.$new_path_file_id;
 
             // Save url image in database
-            $this->upload_data_to_db($models_name,$path_file);
-
+            $this->upload_data_to_db($models_name,$dir_file,$data_file_count["count"]);
             
             // Error checking using WP functions
             if(is_wp_error($uploaded)){
@@ -170,11 +185,19 @@ class ThreeJSWPAdminClass {
         }
     }
 
-    private function upload_data_to_db($models_name,$path_file){
+    private function split_file($path_file,$models_dir){
+
+        $quinientos_kb = 512000;
+        $new_file = fsplit($path_file,$quinientos_kb,$models_dir);
+        
+        return $new_file;
+    }
+
+    private function upload_data_to_db($models_name,$url_file,$split_size){
         global $wpdb;
         try{
          $wpdb->query(
-             "INSERT INTO json_models_path VALUES ( '$models_name', '$path_file' );"
+             "INSERT INTO json_models_path VALUES ( '$models_name', '$url_file' , $split_size );"
          );
         }catch (Exception $e){
             throw new Exception("Models name taken");
