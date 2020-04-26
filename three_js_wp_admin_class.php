@@ -1,6 +1,6 @@
 <?
 
-include 'phpfsplit.php';
+include 'functions.php';
 
 class ThreeJSWPAdminClass {
 
@@ -11,11 +11,10 @@ class ThreeJSWPAdminClass {
         // Add CSS
         add_action( 'wp_enqueue_scripts',array($this,'register_css'));
         add_action( 'wp_enqueue_scripts',array($this, 'load_css'));
-
+        
         // Menus
         add_action( 'admin_menu', array($this,'menu_page') );
     }
-    
 
     public function register_css(){
         wp_register_style( 'modelscss', plugin_dir_url( __FILE__ ).'includes/css/style.css' );
@@ -41,6 +40,7 @@ class ThreeJSWPAdminClass {
             return
             "
             <div id='". $atts['name']."' class='model-canvas'></div>
+            <script src='".plugins_url( 'includes/build/axios.min.js',__FILE__ )."'></script>
             <script type='module'>
             import init from '".plugins_url( 'includes/js/main.js',__FILE__ )."';
             
@@ -105,7 +105,7 @@ class ThreeJSWPAdminClass {
 
     public function new_model(){
        
-        $this->test_handle_post();
+        $this->new_model_handle_post();
 
        ?>
        <div>
@@ -129,10 +129,10 @@ class ThreeJSWPAdminClass {
             try{
 
                 $upload_info = wp_get_upload_dir();
-                $model_file = explode('uploads',$_POST['path']);
-                $file = $upload_info['basedir'] . end($model_file);
+                $model_file = explode('/',$_POST['path']);
+                $file = $upload_info['basedir'] .'/'. $model_file[1];
 
-                wp_delete_file( $file);
+                deleteDirectory($file);
 
                 $wpdb->query(
                     "DELETE FROM json_models_path WHERE models_name = '".$_POST['model_name']."';"
@@ -145,42 +145,42 @@ class ThreeJSWPAdminClass {
         }
     }
 
-    private function test_handle_post(){
+    private function new_model_handle_post(){
 
         if(isset($_FILES['upload_json'])){
             // Obtenemos el archivo .json
-            $json_file = $_FILES['upload_json'];
+            $model_json = $_FILES['upload_json'];
             $overrides = array( 'test_form' => false );
             // Subimos el archivo 
-            $uploaded = wp_handle_upload($json_file,$overrides);
+            $file_uploaded = wp_handle_upload($model_json,$overrides);
             // Obtenemos el path
-            $path_file = $uploaded['file'];
+            $path_file = $file_uploaded['file'];
 
-            $models_name = $_POST['model_name'];
             // Creamos un directorio con nombre el nombre del modelo+'_dir'
+            $models_name = $_POST['model_name'];
             $dir_name = md5($models_name.'_dir');
-            
             wp_mkdir_p( wp_upload_dir()['basedir'].'/'.$dir_name );
-
             $models_dir = wp_upload_dir()['basedir'].'/'.$dir_name.'/';
 
-            // localhost/path/to/dir/0sx3vk1
+            // Separar el archivo .json en varios archivos mas chicos
             $data_file_count = $this->split_file($path_file,$models_dir);
 
+            // Guardar nombre del modelo base y la cantidad de archivos 
+            // en el que se separo en la base de datos
             $new_path_file_id = $data_file_count["file_name"];
-
             $dir_file = wp_upload_dir()['baseurl'].'/'.$dir_name.'/'.$new_path_file_id;
-
             // Save url image in database
             $this->upload_data_to_db($models_name,$dir_file,$data_file_count["count"]);
             
             // Error checking using WP functions
-            if(is_wp_error($uploaded)){
+            if(is_wp_error($file_uploaded)){
 
-                echo "Error uploading file: " . $uploaded->get_error_message();
+                echo "Error uploading file: " . $file_uploaded->get_error_message();
             }else{
                 
                 echo "<bold> File upload successful! </bold>";
+                wp_delete_file( $path_file );
+
             }
         }
     }
@@ -190,6 +190,13 @@ class ThreeJSWPAdminClass {
         $quinientos_kb = 512000;
         $new_file = fsplit($path_file,$quinientos_kb,$models_dir);
         
+        /*
+         return example
+         [
+            "file_name" => "abcd3",
+            "count" => 23
+        ];
+        */
         return $new_file;
     }
 
@@ -207,8 +214,13 @@ class ThreeJSWPAdminClass {
     private function delete_data_from_db($models_name){
         global $wpdb;
         
+        $model = $wpdb->get_row(
+            "SELECT * FROM json_models_path WHERE models_name = '$models_name';"
+        );
+
         $table = "json_models_path";
         $wpdb->delete($table, array( 'models_name' => $models_name ));
+
     }
 
 

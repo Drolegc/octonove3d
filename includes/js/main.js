@@ -5,13 +5,23 @@ export default class{
 
     constructor(name,dist,path,size){
 
-        this.container = document.getElementById(name);
+        this.name = name;
+        this.dist = dist;
+        this.path = path;
+        this.size = size;
+
+        this.loadFileFirst(size).then((file)=> this.initCanvas(file));
+    }
+
+    initCanvas(jsonfile){
+
+        this.container = document.getElementById(this.name);
 
         var height = this.container.getBoundingClientRect().height;
         var width = this.container.getBoundingClientRect().width;
 
         this.camera = new THREE.PerspectiveCamera(45, width / height, 1, 2000);
-        this.camera.position.z = dist;
+        this.camera.position.z = this.dist;
 
         this.scene = new THREE.Scene();
 
@@ -24,14 +34,7 @@ export default class{
 
         var objectLoader = new THREE.ObjectLoader();
 
-        //var strJ = this.loadFile(path + );
-        var strJ = "";
-
-        for(var i = 0;i<size;i++){
-            strJ = strJ.concat(this.loadFile(path + "00" +i))
-        }
-
-        this.loader(this.scene,objectLoader,strJ);
+        this.loader(this.scene,objectLoader,jsonfile);
 
         var canvas = document.createElement('canvas');
         canvas.width = this.container.offsetWidth;
@@ -90,14 +93,16 @@ export default class{
         });
     }
 
-    loadFile(filePath) {
-        var result = null;
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.open('GET', filePath, false);
-        xmlhttp.send();
-        if (xmlhttp.status == 200) {
-            result = xmlhttp.responseText;
+    async loadFileFirst() {
+
+        var resp = "";
+
+        for(var i=0;i<this.size;i++){
+            var response = await axios.get(this.path + "00" + i);
+            resp += response.data;
         }
-        return result;
+    
+        return resp;
+    
     }
 }
