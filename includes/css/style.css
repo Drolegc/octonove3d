@@ -1,4 +1,12 @@
 
-.model_canvas {
-    height: 50vh;
+.model-canvas{
+    height: 100vh;
+    width: 100vw;
+    background-color: antiquewhite;
+}
+
+.model-canvas canvas {
+    width: 100%;
+    height: 100%;
+    touch-action: none;
 }

@@ -1,7 +1,5 @@
 <?
 
-include 'functions.php';
-
 class ThreeJSWPAdminClass {
 
     public function __construct(){
@@ -39,12 +37,16 @@ class ThreeJSWPAdminClass {
             
             return
             "
-            <div id='". $atts['name']."' class='model-canvas'></div>
+            <div id='". $atts['name']."' class='model-canvas'>
+                <canvas id='". $atts['name']."-canvas'></canvas>
+            </div>
+            <script src='https://cdn.babylonjs.com/babylon.max.js'></script>
+            <script src='https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js'></script>
             <script src='".plugins_url( 'includes/build/axios.min.js',__FILE__ )."'></script>
             <script type='module'>
             import init from '".plugins_url( 'includes/js/main.js',__FILE__ )."';
             
-            new init('". $atts['name']."','".$atts['dist']."','".$model->path_file."','".$model->size."');
+            new init('".$model->path_file."','". $atts['name']."-canvas');
             </script>
             ";
         }
@@ -56,7 +58,7 @@ class ThreeJSWPAdminClass {
         global $wpdb;
 
         $model = $wpdb->get_row(
-            "SELECT * FROM json_models_path WHERE models_name = '$models_name';"
+            "SELECT * FROM json_models_path_free WHERE models_name = '$models_name';"
         );
 
         return $model;
@@ -68,7 +70,7 @@ class ThreeJSWPAdminClass {
 
         global $wpdb;
         $models = $wpdb->get_results(
-            "SELECT * FROM json_models_path"
+            "SELECT * FROM json_models_path_free"
         );
 
         echo "<h2> List of models </h2>";
@@ -115,7 +117,7 @@ class ThreeJSWPAdminClass {
         <form method='post' action='' name='myform' enctype='multipart/form-data'>
         <label for="model_name">Model's name </label>
         <input type="text" id="model_name" name="model_name">
-        <input type="file" id='upload_json' name='upload_json' accept=".json">
+        <input type="file" id='upload_json' name='upload_json' >
         <input type="submit" value="Upload">
         </form>
        </div>
@@ -132,7 +134,8 @@ class ThreeJSWPAdminClass {
                 $model_file = explode('/',$_POST['path']);
                 $file = $upload_info['basedir'] .'/'. $model_file[1];
 
-                deleteDirectory($file);
+                echo var_dump($file);
+                wp_delete_file( $file );
 
                 $wpdb->query(
                     "DELETE FROM json_models_path WHERE models_name = '".$_POST['model_name']."';"
@@ -155,22 +158,12 @@ class ThreeJSWPAdminClass {
             $file_uploaded = wp_handle_upload($model_json,$overrides);
             // Obtenemos el path
             $path_file = $file_uploaded['file'];
+            $path_file = explode('uploads',$path_file);
+            $path_file = end($path_file);
 
-            // Creamos un directorio con nombre el nombre del modelo+'_dir'
             $models_name = $_POST['model_name'];
-            $dir_name = md5($models_name.'_dir');
-            wp_mkdir_p( wp_upload_dir()['basedir'].'/'.$dir_name );
-            $models_dir = wp_upload_dir()['basedir'].'/'.$dir_name.'/';
-
-            // Separar el archivo .json en varios archivos mas chicos
-            $data_file_count = $this->split_file($path_file,$models_dir);
-
-            // Guardar nombre del modelo base y la cantidad de archivos 
-            // en el que se separo en la base de datos
-            $new_path_file_id = $data_file_count["file_name"];
-            $dir_file = wp_upload_dir()['baseurl'].'/'.$dir_name.'/'.$new_path_file_id;
-            // Save url image in database
-            $this->upload_data_to_db($models_name,$dir_file,$data_file_count["count"]);
+            // Guardamos nombre del modelo y path
+            $this->upload_data_to_db($models_name,wp_upload_dir()['baseurl'].$path_file);
             
             // Error checking using WP functions
             if(is_wp_error($file_uploaded)){
@@ -185,26 +178,11 @@ class ThreeJSWPAdminClass {
         }
     }
 
-    private function split_file($path_file,$models_dir){
-
-        $quinientos_kb = 512000;
-        $new_file = fsplit($path_file,$quinientos_kb,$models_dir);
-        
-        /*
-         return example
-         [
-            "file_name" => "abcd3",
-            "count" => 23
-        ];
-        */
-        return $new_file;
-    }
-
-    private function upload_data_to_db($models_name,$url_file,$split_size){
+    private function upload_data_to_db($models_name,$url_file){
         global $wpdb;
         try{
          $wpdb->query(
-             "INSERT INTO json_models_path VALUES ( '$models_name', '$url_file' , $split_size );"
+             "INSERT INTO json_models_path_free VALUES ( '$models_name', '$url_file' );"
          );
         }catch (Exception $e){
             throw new Exception("Models name taken");

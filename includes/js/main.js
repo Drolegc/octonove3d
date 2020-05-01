@@ -1,108 +1,50 @@
-import * as THREE from '../build/three.module.js';
-import { OrbitControls } from '../build/OrbitControls.js';
+//import BABYLON from '../build/babylon.min.js'
+//import LOADER from '../build/loader.min.js'
 
 export default class{
 
-    constructor(name,dist,path,size){
+    constructor(path,nameId){
+        this.path = path
+        this.nameId = nameId
 
-        this.name = name;
-        this.dist = dist;
-        this.path = path;
-        this.size = size;
-
-        this.loadFileFirst(size).then((file)=> this.initCanvas(file));
+        axios.get(path).then((data) => this.init(data.data));
     }
 
-    initCanvas(jsonfile){
+    init(gltfData) {
+        var canvas = document.getElementById(this.nameId);
 
-        this.container = document.getElementById(this.name);
+        var engine = null;
+        var scene = null;
+        var sceneToRender = null;
+        var createDefaultEngine = function () { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); };
+        var createScene = function () {
+            var scene = new BABYLON.Scene(engine);
+            scene.createDefaultCameraOrLight();
 
-        var height = this.container.getBoundingClientRect().height;
-        var width = this.container.getBoundingClientRect().width;
+            var gltf = JSON.stringify(gltfData);
 
-        this.camera = new THREE.PerspectiveCamera(45, width / height, 1, 2000);
-        this.camera.position.z = this.dist;
+            BABYLON.SceneLoader.Append("", "data:" + gltf, scene, function () {
+                scene.createDefaultCamera(true, true, true);
+            });
 
-        this.scene = new THREE.Scene();
+            return scene;
+        };
 
-        var ambient = new THREE.AmbientLight(0x444444);
-        this.scene.add(ambient);
+        engine = createDefaultEngine();
+        if (!engine) throw 'engine should not be null.';
+        scene = createScene();
+        sceneToRender = scene
 
-        var directionalLight = new THREE.DirectionalLight(0xffeedd);
-        directionalLight.position.set(0, 0, 1).normalize();
-        this.scene.add(directionalLight);
-
-        var objectLoader = new THREE.ObjectLoader();
-
-        this.loader(this.scene,objectLoader,jsonfile);
-
-        var canvas = document.createElement('canvas');
-        canvas.width = this.container.offsetWidth;
-        canvas.height = this.container.offsetHeight + 50;
-
-        this.renderer = new THREE.WebGLRenderer( { alpha:true,canvas:canvas });
-        this.renderer.setSize(canvas.width,canvas.height);
-        this.container.appendChild(canvas);
-
-        this.control = new OrbitControls(this.camera, this.renderer.domElement);
-        this.control.autoRotate = true;
-
-        var self = this;
-        window.addEventListener('resize', () => {
-            self.onWindowResize();
-        }, false);
-        this.onWindowResize();
-    
-        this.animate();
-    }
-    
-    onWindowResize() {
-        this.camera.aspect = this.container.offsetWidth / this.container.offsetHeight;
-        this.camera.updateProjectionMatrix();
-    
-        this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
-    }
-
-    animate() {
-
-        var self = this;
-        requestAnimationFrame(() => {
-            self.animate();
+        engine.runRenderLoop(function () {
+            if (sceneToRender) {
+                sceneToRender.render();
+            }
         });
-        this.control.update();
-        this.render();
-    
-    }
 
-    render() {
-
-        var scene = this.scene;
-        var camera = this.camera;
-
-        this.renderer.render(scene,camera)
-    
-    }
-
-    loader(scene,objectLoader,str){
-        var j = JSON.parse(str);
-        var camera = this.camera;
-        objectLoader.parse(j, function (obj) {
-            camera.lookAt(obj.position)
-            scene.add(obj);
-
+        // Resize
+        window.addEventListener("resize", function () {
+            engine.resize();
         });
     }
 
-    async loadFileFirst() {
-
-        var resp = "";
-
-        for(var i=0;i<this.size;i++){
-            var response = await axios.get(this.path + "00" + i);
-            resp += response.data;
-        }
-    
-        return resp;
-    
-    }
 }

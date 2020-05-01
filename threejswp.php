@@ -27,10 +27,9 @@
 
     $charset_collate = $wpdb->get_charset_collate();
 
-    $sql = "CREATE TABLE json_models_path (
+    $sql = "CREATE TABLE json_models_path_free (
         models_name varchar(55) NOT NULL,
         path_file varchar(300) NOT NULL,
-        size INT,
         UNIQUE KEY models_name (models_name)
     ) $charset_collate;";
 
