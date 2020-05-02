@@ -1,5 +1,3 @@
-//import BABYLON from '../build/babylon.min.js'
-//import LOADER from '../build/loader.min.js'
 
 export default class{
 

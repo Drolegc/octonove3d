@@ -40,9 +40,8 @@ class ThreeJSWPAdminClass {
             <div id='". $atts['name']."' class='model-canvas'>
                 <canvas id='". $atts['name']."-canvas'></canvas>
             </div>
-            <script src='https://cdn.babylonjs.com/babylon.max.js'></script>
-            <script src='https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js'></script>
             <script src='".plugins_url( 'includes/build/axios.min.js',__FILE__ )."'></script>
+            <script src='".plugins_url( 'includes/build/babylon.js',__FILE__ )."'></script>
             <script type='module'>
             import init from '".plugins_url( 'includes/js/main.js',__FILE__ )."';
             
@@ -117,7 +116,7 @@ class ThreeJSWPAdminClass {
         <form method='post' action='' name='myform' enctype='multipart/form-data'>
         <label for="model_name">Model's name </label>
         <input type="text" id="model_name" name="model_name">
-        <input type="file" id='upload_json' name='upload_json' >
+        <input type="file" id='upload_json' name='upload_json' accept="babylon">
         <input type="submit" value="Upload">
         </form>
        </div>
