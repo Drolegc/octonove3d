@@ -39,9 +39,8 @@ class AdminClass {
             <div id='". $atts['name']."' class='model-canvas'>
                 <canvas id='". $atts['name']."-canvas'></canvas>
             </div>
-            <script src='https://cdn.babylonjs.com/babylon.max.js'></script>
-            <script src='https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js'></script>
             <script src='".plugins_url( 'includes/build/axios.min.js',__FILE__ )."'></script>
+            <script src='".plugins_url( 'includes/build/babylon.js',__FILE__ )."'></script>
             <script type='module'>
             import init from '".plugins_url( 'includes/js/main.js',__FILE__ )."';
             
@@ -57,7 +56,7 @@ class AdminClass {
         global $wpdb;
 
         $model = $wpdb->get_row(
-            "SELECT * FROM json_models_path_free WHERE models_name = '$models_name';"
+            "SELECT * FROM babylon_models_paid WHERE models_name = '$models_name';"
         );
 
         return $model;
@@ -69,7 +68,7 @@ class AdminClass {
 
         global $wpdb;
         $models = $wpdb->get_results(
-            "SELECT * FROM json_models_path_free"
+            "SELECT * FROM babylon_models_paid"
         );
 
         echo "<h2> List of models </h2>";
@@ -116,7 +115,7 @@ class AdminClass {
         <form method='post' action='' name='myform' enctype='multipart/form-data'>
         <label for="model_name">Model's name </label>
         <input type="text" id="model_name" name="model_name">
-        <input type="file" id='upload_json' name='upload_json' >
+        <input type="file" id='upload_json' name='upload_json' accept=".babylon">
         <input type="submit" value="Upload">
         </form>
        </div>
@@ -181,7 +180,7 @@ class AdminClass {
         global $wpdb;
         try{
          $wpdb->query(
-             "INSERT INTO json_models_path_free VALUES ( '$models_name', '$url_file' );"
+             "INSERT INTO babylon_models_paid VALUES ( '$models_name', '$url_file' );"
          );
         }catch (Exception $e){
             throw new Exception("Models name taken");
