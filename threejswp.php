@@ -7,14 +7,14 @@
   Author URI: http://AUTHOR_URI.com
   Version: 1.5
   */
+  if( ! defined('ABSPATH' )) die;
 
-  include 'three_js_wp_admin_class.php';
+  $path = dirname(__FILE__).'\three_js_wp_admin_class.php';
+  if( !file_exists($path)) die("NO EXISTE EL ARCHIVO");
+  require_once $path;
 
-  if( ! defined('ABSPATH' )) {
-      die;
-  }
-
-  $var = new ThreeJSWPAdminClass();
+  if(!class_exists("AdminClass")) die("THERE'S NO HOPE");
+  $var = new AdminClass();
 
   // Activation
   register_activation_hook( __FILE__, 'activate' );

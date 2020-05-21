@@ -1,10 +1,9 @@
-<?
-
-class ThreeJSWPAdminClass {
+<?php
+class AdminClass {
 
     public function __construct(){
         // Shortcode example    
-        add_shortcode( 'threejs_octonove', array($this,'threejswp_shortcode') );
+        //add_shortcode( 'threejs_octonove', array($this,'threejswp_shortcode') );
 
         // Add CSS
         add_action( 'wp_enqueue_scripts',array($this,'register_css'));
@@ -88,7 +87,7 @@ class ThreeJSWPAdminClass {
         <input type='text' id='path' name='path' value="<?echo "uploads".end($split);?>" />
         <input type="submit" value="Delete">
             </form>
-            <?
+            <?php
         }
         echo "</div>";
     }
@@ -102,7 +101,7 @@ class ThreeJSWPAdminClass {
         Sed in libero ut nibh placerat accumsan. Sed in libero ut nibh placerat accumsan.
         </p>
         </div>
-        <?
+        <?php 
     }
 
     public function new_model(){
@@ -121,7 +120,7 @@ class ThreeJSWPAdminClass {
         <input type="submit" value="Upload">
         </form>
        </div>
-       <?
+       <?php
     }
 
     private function delete_handle_post(){
@@ -205,3 +204,5 @@ class ThreeJSWPAdminClass {
 
 }
 
+
+?>
