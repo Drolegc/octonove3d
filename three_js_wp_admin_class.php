@@ -57,7 +57,7 @@ class ThreeJSWPAdminClass {
         global $wpdb;
 
         $model = $wpdb->get_row(
-            "SELECT * FROM json_models_path_free WHERE models_name = '$models_name';"
+            "SELECT * FROM babylon_models_paid WHERE models_name = '$models_name';"
         );
 
         return $model;
@@ -69,7 +69,7 @@ class ThreeJSWPAdminClass {
 
         global $wpdb;
         $models = $wpdb->get_results(
-            "SELECT * FROM json_models_path_free"
+            "SELECT * FROM babylon_models_paid"
         );
 
         echo "<h2> List of models </h2>";
@@ -116,7 +116,7 @@ class ThreeJSWPAdminClass {
         <form method='post' action='' name='myform' enctype='multipart/form-data'>
         <label for="model_name">Model's name </label>
         <input type="text" id="model_name" name="model_name">
-        <input type="file" id='upload_json' name='upload_json' accept="babylon">
+        <input type="file" id='upload_json' name='upload_json' accept=".babylon">
         <input type="submit" value="Upload">
         </form>
        </div>
@@ -181,7 +181,7 @@ class ThreeJSWPAdminClass {
         global $wpdb;
         try{
          $wpdb->query(
-             "INSERT INTO json_models_path_free VALUES ( '$models_name', '$url_file' );"
+             "INSERT INTO babylon_models_paid VALUES ( '$models_name', '$url_file' );"
          );
         }catch (Exception $e){
             throw new Exception("Models name taken");

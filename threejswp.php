@@ -1,8 +1,8 @@
 <?php
   /*
-  Plugin name: THREEJSWP OCTONOVE
+  Plugin name: 3DMODEL OCTONOVE
   Plugin URI: http://PLUGIN_URI.com/
-  Description: Three JS with Wordpress 
+  Description: Babylon JS with Wordpress 
   Author: Octonove Agency
   Author URI: http://AUTHOR_URI.com
   Version: 1.5
@@ -27,7 +27,7 @@
 
     $charset_collate = $wpdb->get_charset_collate();
 
-    $sql = "CREATE TABLE json_models_path_free (
+    $sql = "CREATE TABLE babylon_models_paid (
         models_name varchar(55) NOT NULL,
         path_file varchar(300) NOT NULL,
         UNIQUE KEY models_name (models_name)
@@ -45,7 +45,7 @@
 
   function uninstall(){
     global $wpdb;
-     $table_name = $wpdb->prefix . 'json_models_path';
+     $table_name = $wpdb->prefix . 'babylon_models_paid';
      $sql = "DROP TABLE IF EXISTS $table_name";
      $wpdb->query($sql);
   }
