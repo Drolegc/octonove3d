@@ -1,9 +1,12 @@
 <?php
 class AdminClass {
 
+    const NOMBRE_BD = "babylon_models_paid";
+
     public function __construct(){
         // Shortcode example    
-        //add_shortcode( 'threejs_octonove', array($this,'threejswp_shortcode') );
+        add_shortcode( 'octonove3d', array($this,'shortcode') );
+        add_shortcode( 'set_octonove3d', array($this,'set_configurations_shortcode'));
 
         // Add CSS
         add_action( 'wp_enqueue_scripts',array($this,'register_css'));
@@ -22,15 +25,22 @@ class AdminClass {
     }
 
     public function menu_page(){
-        add_menu_page( 'ThreeJSWP', 'ThreeJSWP', 'manage_options', 'threejswp-admin-menu',array($this,'help'), '', 200 );
-        add_submenu_page( 'threejswp-admin-menu', 'list-models', 'Models list', 'manage_options', 'list_models_slug', array($this,'list_models'), null);
-        add_submenu_page( 'threejswp-admin-menu', 'new-model', 'New model', 'manage_options', 'new_model_slug', array($this,'new_model'), null);
+        add_menu_page( 'Octonove3D', 'Octonove3D', 'manage_options', 'octonove3d-admin-menu',array($this,'help'), '', 200 );
+        add_submenu_page( 'octonove3d-admin-menu', 'list-models', 'Models list', 'manage_options', 'list_models_slug', array($this,'list_models'), null);
+        add_submenu_page( 'octonove3d-admin-menu', 'new-model', 'New model', 'manage_options', 'new_model_slug', array($this,'new_model'), null);
 
     }
 
-    public function threejswp_shortcode($atts){
+    public function set_configurations_shortcode(){
+        return "
+        <script src='".plugins_url( 'includes/build/axios.min.js',__FILE__ )."'></script>
+            <script src='".plugins_url( 'includes/build/babylon.js',__FILE__ )."'></script>
+        ";
+    }
+
+    public function shortcode($atts){
         
-        if (isset($atts['name']) && isset($atts['dist'])) {
+        if (isset($atts['name'])) {
 
             $model = $this->getModel($atts['name']);
             
@@ -39,8 +49,7 @@ class AdminClass {
             <div id='". $atts['name']."' class='model-canvas'>
                 <canvas id='". $atts['name']."-canvas'></canvas>
             </div>
-            <script src='".plugins_url( 'includes/build/axios.min.js',__FILE__ )."'></script>
-            <script src='".plugins_url( 'includes/build/babylon.js',__FILE__ )."'></script>
+            
             <script type='module'>
             import init from '".plugins_url( 'includes/js/main.js',__FILE__ )."';
             
@@ -49,14 +58,15 @@ class AdminClass {
             ";
         }
         else
-            echo 'Error';
+            echo "Shortcode Error";
     }
 
     private function getModel($models_name){
         global $wpdb;
 
+        $nombre = self::NOMBRE_BD;
         $model = $wpdb->get_row(
-            "SELECT * FROM babylon_models_paid WHERE models_name = '$models_name';"
+            "SELECT * FROM $nombre WHERE models_name = '$models_name';"
         );
 
         return $model;
@@ -80,11 +90,11 @@ class AdminClass {
             $split = explode('uploads',$model->path_file);
             ?>
             <form action="" method='post' name='myform' enctype='multipart/form-data'>
-            <label for='model_name'>Name </label>
-        <input type='text' id='model_name' name='model_name' value="<?echo $model->models_name?>" />
-        <label for='path'>Path </label>
-        <input type='text' id='path' name='path' value="<?echo "uploads".end($split);?>" />
-        <input type="submit" value="Delete">
+                <label for='model_name'>Name </label>
+                <input type='text' id='model_name' name='model_name' value="<?php echo $model->models_name?>" />
+                <label for='path'>Path </label>
+                <input type='text' id='path' name='path' value="<?php echo "uploads".end($split);?>" />
+                <input type="submit" value="Delete">
             </form>
             <?php
         }
@@ -94,7 +104,7 @@ class AdminClass {
     public function help(){
         ?>
         <div>
-        <h2>About THREEJS Octonove</h2>
+        <h2>About OCTONOVE3D</h2>
         <p>
         Fusce vulputate eleifend sapien. Fusce fermentum.
         Sed in libero ut nibh placerat accumsan. Sed in libero ut nibh placerat accumsan.
@@ -128,15 +138,19 @@ class AdminClass {
             global $wpdb;
             try{
 
-                $upload_info = wp_get_upload_dir();
-                $model_file = explode('/',$_POST['path']);
-                $file = $upload_info['basedir'] .'/'. $model_file[1];
+                if(!$this->check_model_exists($_POST['model_name'])){
+                    echo "<b style='color:red;'>Este modelo no existe</b>";
+                    return;
+                }
 
-                echo var_dump($file);
+                $upload_info = wp_get_upload_dir();
+                $model_file = explode('uploads',$_POST['path']);
+                $file = $upload_info['basedir'] . end($model_file);
+
                 wp_delete_file( $file );
 
                 $wpdb->query(
-                    "DELETE FROM json_models_path WHERE models_name = '".$_POST['model_name']."';"
+                    "DELETE FROM babylon_models_paid WHERE models_name = '".$_POST['model_name']."';"
                 );
 
                 echo "Models deleted";
@@ -149,11 +163,22 @@ class AdminClass {
     private function new_model_handle_post(){
 
         if(isset($_FILES['upload_json'])){
-            // Obtenemos el archivo .json
+            //Chequear primero si el nombre del modelo existe
+
+            if($this->check_model_exists($_POST['model_name'])){
+                echo "<b style='color:red'>Error: Modelo con el mismo nombre ya existe</b>";
+                return;
+            }
+
             $model_json = $_FILES['upload_json'];
             $overrides = array( 'test_form' => false );
             // Subimos el archivo 
             $file_uploaded = wp_handle_upload($model_json,$overrides);
+            if(isset($file_uploaded["error"])){
+                echo "<b style='color:red'>Error: ".$file_uploaded["error"]."</b>";
+                return;
+            }
+
             // Obtenemos el path
             $path_file = $file_uploaded['file'];
             $path_file = explode('uploads',$path_file);
@@ -163,17 +188,15 @@ class AdminClass {
             // Guardamos nombre del modelo y path
             $this->upload_data_to_db($models_name,wp_upload_dir()['baseurl'].$path_file);
             
-            // Error checking using WP functions
-            if(is_wp_error($file_uploaded)){
-
-                echo "Error uploading file: " . $file_uploaded->get_error_message();
-            }else{
-                
-                echo "<bold> File upload successful! </bold>";
-                wp_delete_file( $path_file );
-
-            }
+            echo "<b style='color:green;'> File upload successful! </b>";
         }
+    }
+
+    private function check_model_exists($models_name){
+        global $wpdb;
+        
+        $db = self::NOMBRE_BD;
+        return $wpdb->get_var("SELECT COUNT(1) FROM $db WHERE models_name='$models_name'");
     }
 
     private function upload_data_to_db($models_name,$url_file){
@@ -191,10 +214,10 @@ class AdminClass {
         global $wpdb;
         
         $model = $wpdb->get_row(
-            "SELECT * FROM json_models_path WHERE models_name = '$models_name';"
+            "SELECT * FROM babylon_models_paid WHERE models_name = '$models_name';"
         );
 
-        $table = "json_models_path";
+        $table = "babylon_models_paid";
         $wpdb->delete($table, array( 'models_name' => $models_name ));
 
     }

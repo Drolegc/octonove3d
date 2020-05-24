@@ -9,7 +9,7 @@
   */
   if( ! defined('ABSPATH' )) die;
 
-  $path = dirname(__FILE__).'\three_js_wp_admin_class.php';
+  $path = dirname(__FILE__).'/three_js_wp_admin_class.php';
   if( !file_exists($path)) die("NO EXISTE EL ARCHIVO");
   require_once $path;
 
@@ -49,6 +49,5 @@
      $sql = "DROP TABLE IF EXISTS $table_name";
      $wpdb->query($sql);
   }
-
 
 ?>

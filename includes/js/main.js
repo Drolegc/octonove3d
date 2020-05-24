@@ -17,12 +17,13 @@ export default class{
         var createDefaultEngine = function () { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); };
         var createScene = function () {
             var scene = new BABYLON.Scene(engine);
-            scene.createDefaultCameraOrLight();
 
             var gltf = JSON.stringify(gltfData);
 
             BABYLON.SceneLoader.Append("", "data:" + gltf, scene, function () {
                 scene.createDefaultCamera(true, true, true);
+                scene.activeCamera.alpha += Math.PI/2;             
+
             });
 
             return scene;
