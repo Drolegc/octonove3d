@@ -1,12 +1,26 @@
-
-.model-canvas{
-    height: 100vh;
-    width: 100vw;
-    background-color: antiquewhite;
+.model-card {
+    height: 100%;
+    width: 100%;
+    background-color: aliceblue;
+    box-shadow: 2px 2px 4px #000000;
+    border-radius: 3% 3% 1% 1%;
 }
 
-.model-canvas canvas {
+.model-card canvas {
+    width: 100%;
+    border-radius: 3% 3% 0% 0%;
+}
+
+.details {
+    padding: 1%;
+}
+
+.model-all-screen {
+    height: 100vh;
+    width: 100vh;
+}
+
+.model-all-screen canvas {
     width: 100%;
     height: 100%;
-    touch-action: none;
 }

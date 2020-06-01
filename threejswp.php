@@ -28,6 +28,7 @@
     $charset_collate = $wpdb->get_charset_collate();
 
     $sql = "CREATE TABLE babylon_models_paid (
+        user varchar(55) NOT NULL,
         models_name varchar(55) NOT NULL,
         path_file varchar(300) NOT NULL,
         UNIQUE KEY models_name (models_name)

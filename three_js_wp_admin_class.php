@@ -7,6 +7,7 @@ class AdminClass {
         // Shortcode example    
         add_shortcode( 'octonove3d', array($this,'shortcode') );
         add_shortcode( 'set_octonove3d', array($this,'set_configurations_shortcode'));
+        add_shortcode( 'octonove3d_new_model', array($this, 'new_model'));
 
         // Add CSS
         add_action( 'wp_enqueue_scripts',array($this,'register_css'));
@@ -34,20 +35,46 @@ class AdminClass {
     public function set_configurations_shortcode(){
         return "
         <script src='".plugins_url( 'includes/build/axios.min.js',__FILE__ )."'></script>
-            <script src='".plugins_url( 'includes/build/babylon.js',__FILE__ )."'></script>
+        <script src='".plugins_url( 'includes/build/babylon.js',__FILE__ )."'></script>
         ";
     }
 
     public function shortcode($atts){
         
+        if(isset($atts['user'])){
+            
+            $models = $this->getModelsUser($atts['user']);
+            $response = "";
+            foreach ($models as $model) {
+                $response = $response."
+                <div id='". $model->models_name."' class='".$this->getClassCSS($atts)."'>
+                <canvas id='". $model->models_name."-canvas'></canvas>
+                <div class='details'>
+                    <p>".ucfirst($model->models_name)."</p>
+                </div>
+                </div>
+                <script type='module'>
+                import init from '".plugins_url( 'includes/js/main.js',__FILE__ )."';
+                
+                new init('".$model->path_file."','". $model->models_name."-canvas');
+                </script>
+                ";
+            }
+            return $response;
+        }
+
         if (isset($atts['name'])) {
 
             $model = $this->getModel($atts['name']);
             
             return
             "
-            <div id='". $atts['name']."' class='model-canvas'>
+            <div id='". $atts['name']."' class='".$this->getClassCSS($atts)."'>
                 <canvas id='". $atts['name']."-canvas'></canvas>
+                <div class='details'>
+                    <p>".ucfirst($atts['name'])."</p>
+                    <small>".$model->user."</small>
+                </div>
             </div>
             
             <script type='module'>
@@ -57,8 +84,8 @@ class AdminClass {
             </script>
             ";
         }
-        else
-            echo "Shortcode Error";
+        
+        return "Shortcode Error";
     }
 
     private function getModel($models_name){
@@ -70,6 +97,29 @@ class AdminClass {
         );
 
         return $model;
+    }
+
+    private function getModelsUser($username){
+        global $wpdb;
+
+        $db = self::NOMBRE_BD;
+        $models = $wpdb->get_results(
+            "SELECT * FROM $db WHERE user = '$username';"
+        );
+        return $models;
+    }
+
+    private function getClassCSS($atts){
+        if(!isset($atts['style'])) return 'model-card';
+
+        switch($atts['style']){
+            case 'all-screen':
+                return 'model-all-screen';
+            case 'card':
+            default:
+                return 'model-card';
+        }
+        
     }
 
     public function list_models(){
@@ -99,37 +149,66 @@ class AdminClass {
             <?php
         }
         echo "</div>";
-    }
+    } 
 
     public function help(){
         ?>
         <div>
-        <h2>About OCTONOVE3D</h2>
+        <h1>Sobre OCTONOVE3D</h1>
         <p>
-        Fusce vulputate eleifend sapien. Fusce fermentum.
-        Sed in libero ut nibh placerat accumsan. Sed in libero ut nibh placerat accumsan.
+        Octonove3D es un plugin que permite mostrar,junto con la libreria BabylonJS, modelos 3D.
         </p>
+        <div>
+            <h2>Guia de como usar Octonove3D</h2>
+            <ul style="padding: 1%;">
+                <li>
+                    <h2>Como subir un modelo</h2>
+                    <ul>
+                        <li>
+                            Dado que el plugin solo acepta .babylon como extension, es necasario importar el modelo que se tenga al <a href="https://sandbox.babylonjs.com/">sandbox de BabylonJS</a>, y exportarlo como .babylon
+                        </li>
+                        <li>Una vez que se tenga el modelo .babylon, ir al menu, New Model, llenar el formulario y dar subir</li>
+                    </ul>
+                </li>
+                <li>
+                    <h2>Shortcodes</h2>
+                    <ul>
+                        <li>
+                            set_octonove ( este shortcode importa la libraria de babylonjs y axios, es necesario incorporarlo antes de mostrar el o los modelos )
+                        </li>
+                        <li>
+                            octonove_3d ( muestra el modelo que se especifique, de lo contrario mostrara error).
+                            </br><b>Parametros obligatorios</b>: name (nombre del modelo que ya se haya guardado en la base de datos)
+                            </br><b>Parametros opcionales</b>: style (opciones: card,all-screen) ; user ( nombre de un usuario registrado, si se usa esta opcion no es necesario hacer uso del parametro name)
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
         </div>
         <?php 
     }
 
     public function new_model(){
        
+        if( !is_user_logged_in() ) return;
+
         $this->new_model_handle_post();
 
-       ?>
-       <div>
-        <h2>
-            New Model
-        </h2>
-        <form method='post' action='' name='myform' enctype='multipart/form-data'>
-        <label for="model_name">Model's name </label>
-        <input type="text" id="model_name" name="model_name">
-        <input type="file" id='upload_json' name='upload_json' accept=".babylon">
-        <input type="submit" value="Upload">
-        </form>
-       </div>
-       <?php
+        ?>
+        <div id="new_model">
+         <h2>
+             New Model
+         </h2>
+         <form method='post' action='' name='myform' enctype='multipart/form-data'>
+         <label for="model_name">Model's name </label>
+         <input type="text" id="model_name" name="model_name">
+         <input type="file" id='upload_json' name='upload_json' accept=".babylon" >
+         <input type="submit" value="Upload">
+         </form>
+        </div>
+        <script src='<?php echo plugin_dir_url( __FILE__ ).'includes/js/preview.js' ?>'></script>
+        <?php
     }
 
     private function delete_handle_post(){
@@ -213,8 +292,9 @@ class AdminClass {
     private function delete_data_from_db($models_name){
         global $wpdb;
         
+        $db = self::NOMBRE_BD;
         $model = $wpdb->get_row(
-            "SELECT * FROM babylon_models_paid WHERE models_name = '$models_name';"
+            "SELECT * FROM $db WHERE models_name = '$models_name';"
         );
 
         $table = "babylon_models_paid";

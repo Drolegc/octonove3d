@@ -1,7 +1,6 @@
+export default class {
 
-export default class{
-
-    constructor(path,nameId){
+    constructor(path, nameId) {
         this.path = path
         this.nameId = nameId
 
@@ -14,15 +13,17 @@ export default class{
         var engine = null;
         var scene = null;
         var sceneToRender = null;
-        var createDefaultEngine = function () { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); };
-        var createScene = function () {
+        var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); };
+        var createScene = function() {
             var scene = new BABYLON.Scene(engine);
 
             var gltf = JSON.stringify(gltfData);
 
-            BABYLON.SceneLoader.Append("", "data:" + gltf, scene, function () {
+            BABYLON.SceneLoader.Append("", "data:" + gltf, scene, function() {
                 scene.createDefaultCamera(true, true, true);
-                scene.activeCamera.alpha += Math.PI/2;             
+                scene.activeCamera.alpha += Math.PI / 2;
+                SceneLoader.ShowLoadingScreen = false;
+                scene.clearColor = new BABYLON.Color4;
 
             });
 
@@ -34,14 +35,14 @@ export default class{
         scene = createScene();
         sceneToRender = scene
 
-        engine.runRenderLoop(function () {
+        engine.runRenderLoop(function() {
             if (sceneToRender) {
                 sceneToRender.render();
             }
         });
 
         // Resize
-        window.addEventListener("resize", function () {
+        window.addEventListener("resize", function() {
             engine.resize();
         });
     }
