@@ -1,10 +1,11 @@
 export default class {
 
-    constructor(path, nameId) {
+    constructor(path, nameId, cant) {
         this.path = path
         this.nameId = nameId
+        this.cant = cant
 
-        axios.get(path).then((data) => this.init(data.data));
+        this.getModel().then((data) => this.init(data));
     }
 
     init(gltfData) {
@@ -17,15 +18,18 @@ export default class {
         var createScene = function() {
             var scene = new BABYLON.Scene(engine);
 
-            var gltf = JSON.stringify(gltfData);
-
-            BABYLON.SceneLoader.Append("", "data:" + gltf, scene, function() {
-                scene.createDefaultCamera(true, true, true);
-                scene.activeCamera.alpha += Math.PI / 2;
-                SceneLoader.ShowLoadingScreen = false;
-                scene.clearColor = new BABYLON.Color4;
-
-            });
+            BABYLON.SceneLoader.Append("", "data:" + gltfData, scene, function() {
+                    scene.createDefaultCamera(true, true, true);
+                    scene.activeCamera.alpha += Math.PI / 2;
+                    SceneLoader.ShowLoadingScreen = false;
+                },
+                function() {
+                    console.log("### Progress ...")
+                },
+                function() {
+                    console.error("Error cargando el modelo")
+                }
+            );
 
             return scene;
         };
@@ -46,5 +50,38 @@ export default class {
             engine.resize();
         });
     }
+
+    Decrypt(passphrase, encrypted_json_string) {
+
+        var obj_json = encrypted_json_string
+
+        var encrypted = obj_json.m;
+        var salt = CryptoJS.enc.Hex.parse(obj_json.salt);
+        var iv = CryptoJS.enc.Hex.parse(obj_json.iv);
+
+        var key = CryptoJS.PBKDF2(passphrase, salt, { hasher: CryptoJS.algo.SHA512, keySize: 64 / 8, iterations: 999 });
+
+
+        var decrypted = CryptoJS.AES.decrypt(encrypted, key, { iv: iv });
+
+        return decrypted.toString(CryptoJS.enc.Utf8);
+    }
+
+    async getModel() {
+
+        var model = ""
+        for (var i = 0; i < this.cant; i++) {
+            var url = window.location
+            var host = url.protocol + "//" + url.host
+            host = 'http://localhost/wordpress/wordpress-5.3.2-es_UY/wordpress'
+            var response = await axios.get(host + '/wp-json/octonove3d/v1/model?m=' + this.path + '&p=' + i).catch((error) => console.error(error))
+            console.log(response.data)
+            var data = this.Decrypt('condiment coach hypnoses doornail', response.data)
+            model += data
+        }
+        return model
+    }
+
+
 
 }

@@ -1,0 +1,60 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #c {
+            height: 50vh;
+            width: 50vw;
+            background-color: antiquewhite;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div style="height: 100px;"></div>
+    <canvas id="c"></canvas>
+    <script type="text/javascript">
+        var canvas = document.getElementById('c')
+        var ctx = canvas.getContext("2d")
+
+        var points = []
+        points.push({
+            y1: 0,
+            x1: 0,
+            y2: ctx.canvas.height,
+            x2: ctx.canvas.width / 3
+        })
+
+
+        var background = new Image();
+        background.src = "./1.jpg"
+
+        background.onload = function() {
+            ctx.drawImage(background, 0, 0)
+        }
+
+        var background_left = new Image()
+        background_left.src = "./2.jpg"
+        var background_right = new Image()
+        background_right.src = "./3.jpg"
+
+        canvas.addEventListener('mousemove', function(event) {
+            var x = event.offsetX
+            var left_zone = ctx.canvas.width - (ctx.canvas.width / 3)
+            var right_zine = canvas
+
+            if (x < canvas.offsetWidth / 3) {
+                ctx.drawImage(background_left, 0, 0)
+            } else {
+                ctx.drawImage(background, 0, 0)
+            }
+        })
+    </script>
+
+</body>
+
+</html>

@@ -1,6 +1,7 @@
 <?php
   /*
-  Plugin name: 3DMODEL OCTONOVE
+  
+  Plugin name: 3DMODEL OCTONOVE SAFE
   Plugin URI: http://PLUGIN_URI.com/
   Description: Babylon JS with Wordpress 
   Author: Octonove Agency
@@ -23,14 +24,16 @@
 
   function activate(){
 
+    
     global $wpdb;
 
     $charset_collate = $wpdb->get_charset_collate();
 
-    $sql = "CREATE TABLE babylon_models_paid (
+    $sql = "CREATE TABLE octonove3d_safe (
         user varchar(55) NOT NULL,
         models_name varchar(55) NOT NULL,
         path_file varchar(300) NOT NULL,
+        cant int NOT NULL,
         UNIQUE KEY models_name (models_name)
     ) $charset_collate;";
 
@@ -46,7 +49,7 @@
 
   function uninstall(){
     global $wpdb;
-     $table_name = $wpdb->prefix . 'babylon_models_paid';
+     $table_name = $wpdb->prefix . 'octonove3d_safe';
      $sql = "DROP TABLE IF EXISTS $table_name";
      $wpdb->query($sql);
   }

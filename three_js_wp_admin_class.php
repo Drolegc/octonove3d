@@ -1,7 +1,10 @@
 <?php
+
+include 'functions.php';
+
 class AdminClass {
 
-    const NOMBRE_BD = "babylon_models_paid";
+    const NOMBRE_BD = "octonove3d_safe";
 
     public function __construct(){
         // Shortcode example    
@@ -15,6 +18,16 @@ class AdminClass {
         
         // Menus
         add_action( 'admin_menu', array($this,'menu_page') );
+
+        // Endpoint
+
+        add_action( 'rest_api_init' ,function(){
+            register_rest_route('octonove3d/v1', '/model', array(
+                'methods' => 'GET',
+                'callback' => 'getModelData'
+            ));
+        });
+        
     }
 
     public function register_css(){
@@ -36,6 +49,7 @@ class AdminClass {
         return "
         <script src='".plugins_url( 'includes/build/axios.min.js',__FILE__ )."'></script>
         <script src='".plugins_url( 'includes/build/babylon.js',__FILE__ )."'></script>
+        <script src='".plugins_url( 'includes/build/crypto.js',__FILE__ )."'></script>
         ";
     }
 
@@ -46,6 +60,9 @@ class AdminClass {
             $models = $this->getModelsUser($atts['user']);
             $response = "";
             foreach ($models as $model) {
+
+                $file_name = end(explode('uploads',$model->path_file));
+                $file_name = end(explode('/',$file_name));
                 $response = $response."
                 <div id='". $model->models_name."' class='".$this->getClassCSS($atts)."'>
                 <canvas id='". $model->models_name."-canvas'></canvas>
@@ -56,7 +73,7 @@ class AdminClass {
                 <script type='module'>
                 import init from '".plugins_url( 'includes/js/main.js',__FILE__ )."';
                 
-                new init('".$model->path_file."','". $model->models_name."-canvas');
+                new init('".$file_name."','". $model->models_name."-canvas','".$model->cant."');
                 </script>
                 ";
             }
@@ -66,6 +83,8 @@ class AdminClass {
         if (isset($atts['name'])) {
 
             $model = $this->getModel($atts['name']);
+            $file_name = end(explode('uploads',$model->path_file));
+            $file_name = end(explode('/',$file_name));
             
             return
             "
@@ -77,10 +96,10 @@ class AdminClass {
                 </div>
             </div>
             
-            <script type='module'>
+            <script type='module' defer>
             import init from '".plugins_url( 'includes/js/main.js',__FILE__ )."';
             
-            new init('".$model->path_file."','". $atts['name']."-canvas');
+            new init('".$file_name."','". $atts['name']."-canvas','".$model->cant."');
             </script>
             ";
         }
@@ -128,9 +147,10 @@ class AdminClass {
 
         global $wpdb;
         $models = $wpdb->get_results(
-            "SELECT * FROM babylon_models_paid"
+            "SELECT * FROM octonove3d_safe"
         );
-
+        
+        echo "<script src='".plugin_dir_url( __FILE__ ).'includes/js/functions_list_models.js'."'></script>";
         echo "<h2> List of models </h2>";
         echo "<div>";
         if(empty($models)){
@@ -139,12 +159,12 @@ class AdminClass {
         foreach($models as $model){
             $split = explode('uploads',$model->path_file);
             ?>
-            <form action="" method='post' name='myform' enctype='multipart/form-data'>
+            <form action="" method='post' name='myform' id="myform" enctype='multipart/form-data'>
                 <label for='model_name'>Name </label>
                 <input type='text' id='model_name' name='model_name' value="<?php echo $model->models_name?>" />
                 <label for='path'>Path </label>
                 <input type='text' id='path' name='path' value="<?php echo "uploads".end($split);?>" />
-                <input type="submit" value="Delete">
+                <input type="button" value="Delete" onclick="checkBeforeDeleteModel()">
             </form>
             <?php
         }
@@ -152,41 +172,7 @@ class AdminClass {
     } 
 
     public function help(){
-        ?>
-        <div>
-        <h1>Sobre OCTONOVE3D</h1>
-        <p>
-        Octonove3D es un plugin que permite mostrar,junto con la libreria BabylonJS, modelos 3D.
-        </p>
-        <div>
-            <h2>Guia de como usar Octonove3D</h2>
-            <ul style="padding: 1%;">
-                <li>
-                    <h2>Como subir un modelo</h2>
-                    <ul>
-                        <li>
-                            Dado que el plugin solo acepta .babylon como extension, es necasario importar el modelo que se tenga al <a href="https://sandbox.babylonjs.com/">sandbox de BabylonJS</a>, y exportarlo como .babylon
-                        </li>
-                        <li>Una vez que se tenga el modelo .babylon, ir al menu, New Model, llenar el formulario y dar subir</li>
-                    </ul>
-                </li>
-                <li>
-                    <h2>Shortcodes</h2>
-                    <ul>
-                        <li>
-                            set_octonove ( este shortcode importa la libraria de babylonjs y axios, es necesario incorporarlo antes de mostrar el o los modelos )
-                        </li>
-                        <li>
-                            octonove_3d ( muestra el modelo que se especifique, de lo contrario mostrara error).
-                            </br><b>Parametros obligatorios</b>: name (nombre del modelo que ya se haya guardado en la base de datos)
-                            </br><b>Parametros opcionales</b>: style (opciones: card,all-screen) ; user ( nombre de un usuario registrado, si se usa esta opcion no es necesario hacer uso del parametro name)
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-        </div>
-        <?php 
+        include('help.php');
     }
 
     public function new_model(){
@@ -207,6 +193,7 @@ class AdminClass {
          <input type="submit" value="Upload">
          </form>
         </div>
+        <script src='<?php echo plugins_url( 'includes/build/babylon.js',__FILE__ ) ?>'></script>
         <script src='<?php echo plugin_dir_url( __FILE__ ).'includes/js/preview.js' ?>'></script>
         <?php
     }
@@ -229,7 +216,7 @@ class AdminClass {
                 wp_delete_file( $file );
 
                 $wpdb->query(
-                    "DELETE FROM babylon_models_paid WHERE models_name = '".$_POST['model_name']."';"
+                    "DELETE FROM octonove3d_safe WHERE models_name = '".$_POST['model_name']."';"
                 );
 
                 echo "Models deleted";
@@ -258,17 +245,47 @@ class AdminClass {
                 return;
             }
 
+
             // Obtenemos el path
             $path_file = $file_uploaded['file'];
-            $path_file = explode('uploads',$path_file);
-            $path_file = end($path_file);
-
-            $models_name = $_POST['model_name'];
-            // Guardamos nombre del modelo y path
-            $this->upload_data_to_db($models_name,wp_upload_dir()['baseurl'].$path_file);
             
-            echo "<b style='color:green;'> File upload successful! </b>";
+            $models_name = $_POST['model_name'];
+
+            // Creamos un directorio con nombre el_nombre_del_modelo
+            $dir_name = md5($models_name);
+            wp_mkdir_p( wp_upload_dir()['basedir'].'/'.$dir_name );
+            $models_dir = wp_upload_dir()['basedir'].'/'.$dir_name.'/';
+
+
+            // Separar el archivo .babylon en varios archivos mas chicos
+            $data_file_count = $this->split_file($file_uploaded['file'],$models_dir);
+
+
+            // Guardar nombre del modelo base y la cantidad de archivos 
+            // en el que se separo en la base de datos
+            $new_path_file_id = $data_file_count["file_name"];
+            $dir_file = wp_upload_dir()['baseurl'].'/'.$dir_name.'/'.$new_path_file_id;
+
+            // Guardamos nombre del modelo y path
+            $this->upload_data_to_db($models_name,$dir_file,$data_file_count["count"]);
+            
+            echo "<br><b style='color:green;'> File upload successful! </b>";
         }
+    }
+
+    private function split_file($path_file,$models_dir){
+
+        $quinientos_kb = 512000;
+        $new_file = fsplit($path_file,$quinientos_kb,$models_dir);
+        
+        /*
+         return example
+         [
+            "file_name" => "abcd3",
+            "count" => 23
+        ];
+        */
+        return $new_file;
     }
 
     private function check_model_exists($models_name){
@@ -278,26 +295,30 @@ class AdminClass {
         return $wpdb->get_var("SELECT COUNT(1) FROM $db WHERE models_name='$models_name'");
     }
 
-    private function upload_data_to_db($models_name,$url_file){
+    private function upload_data_to_db($models_name,$url_file,$cant){
         global $wpdb;
         try{
-         $wpdb->query(
-             "INSERT INTO babylon_models_paid VALUES ( '$models_name', '$url_file' );"
-         );
+            $db = self::NOMBRE_BD;
+            $current_user = wp_get_current_user()->user_login;
+            $wpdb->query(
+                "INSERT INTO $db VALUES ( '$current_user','$models_name', '$url_file', '$cant' );"
+            );
         }catch (Exception $e){
             throw new Exception("Models name taken");
         }
+
     }
 
     private function delete_data_from_db($models_name){
         global $wpdb;
         
+        $usuario_logueado = 
         $db = self::NOMBRE_BD;
         $model = $wpdb->get_row(
             "SELECT * FROM $db WHERE models_name = '$models_name';"
         );
 
-        $table = "babylon_models_paid";
+        $table = "octonove3d_safe";
         $wpdb->delete($table, array( 'models_name' => $models_name ));
 
     }
