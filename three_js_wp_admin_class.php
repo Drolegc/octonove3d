@@ -188,10 +188,14 @@ class AdminClass {
          </h2>
          <form method='post' action='' name='myform' enctype='multipart/form-data'>
          <label for="model_name">Model's name </label>
-         <input type="text" id="model_name" name="model_name">
-         <input type="file" id='upload_json' name='upload_json' accept=".babylon" >
+         <input type="text" id="model_name" name="model_name" required>
+         <input type="file" id='upload_json' name='upload_json' accept=".babylon" required>
+         <input type="hidden" value="" id="cntr_img" name="cntr_img" required>
+         <input type="hidden" value="" id="izq_img" name="izq_img" required>
+         <input type="hidden" value="" id="dir_img" name="dir_img" required>
          <input type="submit" value="Upload">
          </form>
+         <canvas id="preview" width="500px" height="300px"></canvas>
         </div>
         <script src='<?php echo plugins_url( 'includes/build/babylon.js',__FILE__ ) ?>'></script>
         <script src='<?php echo plugin_dir_url( __FILE__ ).'includes/js/preview.js' ?>'></script>
@@ -228,8 +232,13 @@ class AdminClass {
 
     private function new_model_handle_post(){
 
+
         if(isset($_FILES['upload_json'])){
             //Chequear primero si el nombre del modelo existe
+
+            if(pathinfo($_FILES['upload_json']['name'],PATHINFO_EXTENSION) != 'babylon'){
+                echo "<b style='color:red>Error: Archivo no tiene la extension .babylon</b>";
+            }
 
             if($this->check_model_exists($_POST['model_name'])){
                 echo "<b style='color:red'>Error: Modelo con el mismo nombre ya existe</b>";
@@ -244,6 +253,18 @@ class AdminClass {
                 echo "<b style='color:red'>Error: ".$file_uploaded["error"]."</b>";
                 return;
             }
+
+            $izq_img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $_POST['izq_img']));
+            $dir_img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $_POST['dir_img']));
+            $cntr_img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $_POST['cntr_img']));
+
+            $file_cntr_img = wp_handle_upload($cntr_img,$overrides);
+            if(isset($file_cntr_img['error'])){
+                echo "<b style='color:red'>Error: ".$file_cntr_img["error"]."</b>";
+                return;
+            }
+            $file_izq_img = wp_handle_upload($izq_img,$overrides);
+            $file_dir_img = wp_handle_upload($dir_img,$overrides);
 
 
             // Obtenemos el path

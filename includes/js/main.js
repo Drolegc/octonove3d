@@ -74,7 +74,7 @@ export default class {
             var url = window.location
             var host = url.protocol + "//" + url.host
             host = 'http://localhost/wordpress/wordpress-5.3.2-es_UY/wordpress'
-            var response = await axios.get(host + '/wp-json/octonove3d/v1/model?m=' + this.path + '&p=' + i).catch((error) => console.error(error))
+            var response = axios.get(host + '/wp-json/octonove3d/v1/model?m=' + this.path + '&p=' + i).catch((error) => console.error(error))
             console.log(response.data)
             var data = this.Decrypt('condiment coach hypnoses doornail', response.data)
             model += data

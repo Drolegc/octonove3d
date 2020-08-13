@@ -1,72 +1,67 @@
 const fileSelector = document.getElementById('upload_json')
-const div_model = document.getElementById('new_model')
-
-const preview_click = document.createElement('button')
-preview_click.id = 'preview_click'
-preview_click.innerHTML = 'Ver modelo'
-
-const preview_div = document.createElement('div')
-preview_div.appendChild(document.createElement('canvas'))
-preview_div.id = 'preview_div'
-preview_div.style.position = 'absolute'
-preview_div.style.height = '40vh'
-preview_div.style.width = '40vw'
-preview_div.style.zIndex = '1'
 
 var data_model = ""
 
-preview_click.addEventListener('click', (event) => {
-    if (document.getElementById('preview_div') == null) {
-        preview_div.style.top = `${event.clientY}px`
-        preview_div.style.left = `${event.clientX}px`
-        document.body.appendChild(preview_div)
-        init(data_model)
-
-        preview_click.innerHTML = 'Cerrar'
-    } else {
-        document.body.removeChild(preview_div)
-        preview_click.innerHTML = 'Ver modelo'
-
-    }
-})
-
 fileSelector.addEventListener('change', (event) => {
-    if (document.getElementById('preview_click') == null) {
-        div_model.appendChild(preview_click)
-        leerElArchivoSeleccionado(event)
-    }
-
+    leerElArchivoSeleccionado(event)
 })
 
 function leerElArchivoSeleccionado(event) {
     const reader = new FileReader()
     reader.onload = (event) => {
         data_model = event.target.result
+        init(data_model)
     }
     reader.readAsText(event.target.files[0])
 }
 
 function init(gltfData) {
-    var canvas = document.getElementById('preview_div').firstElementChild;
+    var canvas = document.getElementById('preview');
 
-    var engine = null;
-    var scene = null;
-    var sceneToRender = null;
+    var engine = null
+    var scene = null
+    var camera = null
+
+    var sceneToRender = null
     var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); };
+
     var createScene = function() {
         var scene = new BABYLON.Scene(engine);
+        camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, 0, 0, BABYLON.Vector3.Zero(), scene);
+        camera.setPosition(new BABYLON.Vector3(0, 0.5, -4));
 
-        BABYLON.SceneLoader.Append("", "data:" + gltfData, scene, function() {
-            scene.createDefaultCamera(true, true, true);
-            scene.activeCamera.alpha += Math.PI / 2;
-            SceneLoader.ShowLoadingScreen = false;
-            scene.clearColor = new BABYLON.Color4;
+        camera.attachControl(canvas, false);
 
-        }, function() {
-            console.log("### Loading 3d models")
-        }, function() {
-            console.error("### Error loading model")
-        });
+        BABYLON.SceneLoader.Append("", "data:" + gltfData, scene,
+            function() {
+                SceneLoader.ShowLoadingScreen = false
+                scene.clearColor = new BABYLON.Color4
+
+            },
+            function() {
+                console.log("### Loading 3d models")
+            },
+            function(error) {
+                console.error(error)
+            })
+
+
+
+        scene.executeWhenReady(function() {
+            console.log("Scene ready");
+            BABYLON.Tools.CreateScreenshotUsingRenderTarget(engine, scene.activeCamera, { width: 500, height: 300 }, function(img) {
+                console.log("New img")
+                document.getElementById('cntr_img').value = img
+                document.getElementById('izq_img').value = img
+                document.getElementById('dir_img').value = img
+            })
+        })
+
+        scene.registerBeforeRender(function() {
+            for (let i = 0; i < scene.meshes.length; i++) {
+                scene.meshes[i].rotation.y += 0.005
+            }
+        })
 
         return scene;
     };
