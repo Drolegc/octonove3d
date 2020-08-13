@@ -32,17 +32,19 @@ function init(gltfData) {
 
         camera.attachControl(canvas, false);
 
+        BABYLON.SceneLoader.ShowLoadingScreen = false
         BABYLON.SceneLoader.Append("", "data:" + gltfData, scene,
             function() {
-                SceneLoader.ShowLoadingScreen = false
+
                 scene.clearColor = new BABYLON.Color4
 
             },
             function() {
                 console.log("### Loading 3d models")
             },
-            function(error) {
-                console.error(error)
+            function(error, message, exception) {
+                console.error(message)
+                console.log(exception)
             })
 
 
@@ -58,8 +60,10 @@ function init(gltfData) {
         })
 
         scene.registerBeforeRender(function() {
-            for (let i = 0; i < scene.meshes.length; i++) {
-                scene.meshes[i].rotation.y += 0.005
+            let mesh = scene.getMeshByName('__root__')
+            if (mesh) {
+                mesh.rotationQuaternion = null
+                mesh.rotation.y += 0.005
             }
         })
 
