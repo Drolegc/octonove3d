@@ -34,6 +34,9 @@
         models_name varchar(55) NOT NULL,
         path_file varchar(300) NOT NULL,
         cant int NOT NULL,
+        izq_img varchar(255) NOT NULL,
+        cntr_img varchar(255) NOT NULL,
+        dir_img varchar(255) NOT NULL,
         UNIQUE KEY models_name (models_name)
     ) $charset_collate;";
 

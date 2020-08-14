@@ -186,14 +186,14 @@ class AdminClass {
          <h2>
              New Model
          </h2>
-         <form method='post' action='' name='myform' enctype='multipart/form-data'>
+         <form method='post' action='' id='myform' name='myform' enctype='multipart/form-data'>
          <label for="model_name">Model's name </label>
          <input type="text" id="model_name" name="model_name" required>
          <input type="file" id='upload_json' name='upload_json' accept=".babylon" required>
-         <input type="hidden" value="" id="cntr_img" name="cntr_img" required>
-         <input type="hidden" value="" id="izq_img" name="izq_img" required>
-         <input type="hidden" value="" id="dir_img" name="dir_img" required>
-         <input type="submit" value="Upload">
+         <input type="hidden"  id="cntr_img" name="cntr_img"  required>
+         <input type="hidden"  id="izq_img" name="izq_img"  required>
+         <input type="hidden"  id="dir_img" name="dir_img"  required>
+         <input type="submit" value="Upload" id="upload_btn" disabled>
          </form>
          <canvas id="preview" width="500px" height="300px"></canvas>
         </div>
@@ -234,7 +234,6 @@ class AdminClass {
 
 
         if(isset($_FILES['upload_json'])){
-            //Chequear primero si el nombre del modelo existe
 
             if(pathinfo($_FILES['upload_json']['name'],PATHINFO_EXTENSION) != 'babylon'){
                 echo "<b style='color:red>Error: Archivo no tiene la extension .babylon</b>";
@@ -249,46 +248,44 @@ class AdminClass {
             $overrides = array( 'test_form' => false );
             // Subimos el archivo 
             $file_uploaded = wp_handle_upload($model_json,$overrides);
+
             if(isset($file_uploaded["error"])){
-                echo "<b style='color:red'>Error: ".$file_uploaded["error"]."</b>";
+                echo "<b style='color:red'>Error subiendo img: ".$file_uploaded["error"]."</b>";
                 return;
             }
 
-            $izq_img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $_POST['izq_img']));
-            $dir_img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $_POST['dir_img']));
-            $cntr_img = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $_POST['cntr_img']));
-
-            $file_cntr_img = wp_handle_upload($cntr_img,$overrides);
+            $file_cntr_img = $this->base64_image_to_file($_POST['cntr_img']);
             if(isset($file_cntr_img['error'])){
-                echo "<b style='color:red'>Error: ".$file_cntr_img["error"]."</b>";
+                echo "<b style='color:red'>Error:  subiendo img cntr ".$file_cntr_img["error"]."</b>";
                 return;
             }
-            $file_izq_img = wp_handle_upload($izq_img,$overrides);
-            $file_dir_img = wp_handle_upload($dir_img,$overrides);
+            $file_izq_img = $this->base64_image_to_file($_POST['izq_img']);
+            if(isset($file_izq_img['error'])){
+                echo "<b style='color:red'>Error:  subiendo img izq ".$file_izq_img["error"]."</b>";
+                return;
+            }
+            $file_dir_img = $this->base64_image_to_file($_POST['dir_img']);
+            if(isset($file_dir_img['error'])){
+                echo "<b style='color:red'>Error: subiendo img dir ".$file_dir_img["error"]."</b>";
+                return;
+            }
 
 
-            // Obtenemos el path
             $path_file = $file_uploaded['file'];
             
             $models_name = $_POST['model_name'];
 
-            // Creamos un directorio con nombre el_nombre_del_modelo
             $dir_name = md5($models_name);
             wp_mkdir_p( wp_upload_dir()['basedir'].'/'.$dir_name );
             $models_dir = wp_upload_dir()['basedir'].'/'.$dir_name.'/';
 
-
-            // Separar el archivo .babylon en varios archivos mas chicos
             $data_file_count = $this->split_file($file_uploaded['file'],$models_dir);
 
-
-            // Guardar nombre del modelo base y la cantidad de archivos 
-            // en el que se separo en la base de datos
             $new_path_file_id = $data_file_count["file_name"];
             $dir_file = wp_upload_dir()['baseurl'].'/'.$dir_name.'/'.$new_path_file_id;
 
             // Guardamos nombre del modelo y path
-            $this->upload_data_to_db($models_name,$dir_file,$data_file_count["count"]);
+            $this->upload_data_to_db($models_name,$dir_file,$data_file_count["count"],$file_izq_img['tmp_name'],$file_cntr_img['tmp_name'],$file_dir_img['tmp_name']);
             
             echo "<br><b style='color:green;'> File upload successful! </b>";
         }
@@ -299,13 +296,6 @@ class AdminClass {
         $quinientos_kb = 512000;
         $new_file = fsplit($path_file,$quinientos_kb,$models_dir);
         
-        /*
-         return example
-         [
-            "file_name" => "abcd3",
-            "count" => 23
-        ];
-        */
         return $new_file;
     }
 
@@ -316,13 +306,13 @@ class AdminClass {
         return $wpdb->get_var("SELECT COUNT(1) FROM $db WHERE models_name='$models_name'");
     }
 
-    private function upload_data_to_db($models_name,$url_file,$cant){
+    private function upload_data_to_db($models_name,$url_file,$cant,$izq_img,$cntr_img,$dir_img){
         global $wpdb;
         try{
             $db = self::NOMBRE_BD;
             $current_user = wp_get_current_user()->user_login;
             $wpdb->query(
-                "INSERT INTO $db VALUES ( '$current_user','$models_name', '$url_file', '$cant' );"
+                "INSERT INTO $db VALUES ( '$current_user','$models_name', '$url_file', '$cant', '$izq_img', '$cntr_img', '$dir_img' );"
             );
         }catch (Exception $e){
             throw new Exception("Models name taken");
@@ -342,6 +332,36 @@ class AdminClass {
         $table = "octonove3d_safe";
         $wpdb->delete($table, array( 'models_name' => $models_name ));
 
+    }
+
+    private function base64_image_to_file($img){
+
+        $upload_dir = wp_upload_dir();
+
+        $upload_path = $upload_dir;
+
+        $decoded =  base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $img));
+        $filename = 'my-base64-image.png';
+
+        $hashed_filename = md5( $filename . microtime() ) . '_' . $filename;
+
+        $image_upload = file_put_contents( $upload_path['path'].'/' . $hashed_filename, $decoded );
+
+        if( !function_exists( 'wp_handle_sideload' ) ) {
+        require_once( ABSPATH . 'wp-admin/includes/file.php' );
+        }
+
+        if( !function_exists( 'wp_get_current_user' ) ) {
+        require_once( ABSPATH . 'wp-includes/pluggable.php' );
+        }
+
+        $file = array();
+        //$file['error']    = '';
+        $file['tmp_name'] = $upload_path['url'] .'/'. $hashed_filename;
+        $file['name']     = $hashed_filename;
+        $file['type']     = 'image/png';
+        $file['size']     = filesize( $upload_path['path'].'/' . $hashed_filename );
+        return $file;
     }
 
 

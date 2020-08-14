@@ -3,6 +3,8 @@ const fileSelector = document.getElementById('upload_json')
 var data_model = ""
 
 fileSelector.addEventListener('change', (event) => {
+    document.getElementById('upload_btn').disabled = true
+    document.getElementById('upload_btn').value = "Cargando"
     leerElArchivoSeleccionado(event)
 })
 
@@ -35,9 +37,8 @@ function init(gltfData) {
         BABYLON.SceneLoader.ShowLoadingScreen = false
         BABYLON.SceneLoader.Append("", "data:" + gltfData, scene,
             function() {
-
-                scene.clearColor = new BABYLON.Color4
-
+                //scene.CreateDefaultCamera(true, true, true);
+                //scene.clearColor = new BABYLON.Color4
             },
             function() {
                 console.log("### Loading 3d models")
@@ -50,12 +51,24 @@ function init(gltfData) {
 
 
         scene.executeWhenReady(function() {
-            console.log("Scene ready");
             BABYLON.Tools.CreateScreenshotUsingRenderTarget(engine, scene.activeCamera, { width: 500, height: 300 }, function(img) {
-                console.log("New img")
-                document.getElementById('cntr_img').value = img
-                document.getElementById('izq_img').value = img
-                document.getElementById('dir_img').value = img
+                setTimeout(function() {
+                    document.getElementById('dir_img').value = img
+                    document.getElementById('upload_btn').value = "Cargando."
+
+                }, 2 * 1000)
+                setTimeout(function() {
+                    document.getElementById('cntr_img').value = img
+                    document.getElementById('upload_btn').value = "Cargando.."
+
+                }, 7 * 1000)
+                setTimeout(function() {
+                    document.getElementById('upload_btn').value = "Cargando..."
+                    document.getElementById('izq_img').value = img
+                    document.getElementById('upload_btn').disabled = false
+                    document.getElementById('upload_btn').value = "Upload"
+                }, 12 * 1000)
+
             })
         })
 
@@ -85,4 +98,19 @@ function init(gltfData) {
     window.addEventListener("resize", function() {
         engine.resize();
     });
+}
+
+function dataURLtoFile(dataurl, filename) {
+
+    var arr = dataurl.split(','),
+        mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]),
+        n = bstr.length,
+        u8arr = new Uint8Array(n);
+
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+
+    return new File([u8arr], filename, { type: mime });
 }
