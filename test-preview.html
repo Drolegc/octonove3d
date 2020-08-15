@@ -1,98 +1,27 @@
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <style>
-        #c {
-            height: 50vh;
-            width: 50vw;
-            background-color: antiquewhite;
-        }
-        
-        #grid {
-            height: 1in;
-            width: 2in;
-            display: grid;
-            grid-template-columns: auto auto auto;
-            grid-template-rows: auto;
-            background-color: antiquewhite;
-            background-image: url('https://media.sketchfab.com/models/f2a55a205f4645c28926b1807dad2ac0/fallbacks/4df23356b0964084acb68d7cc5e8b372/82e7df45287b42bfbac8957cf40c7a18.jpeg');
-            background-size: auto 100%;
-            background-repeat: no-repeat;
-            background-position: 35% center;
-        }
-        
-        .item {}
-    </style>
 </head>
 
 <body>
 
-    <div style="height: 100px;"></div>
-    <canvas id="c"></canvas>
-    <script type="text/javascript">
-        var canvas = document.getElementById('c')
-        var ctx = canvas.getContext("2d")
 
-        var points = []
-        points.push({
-            y1: 0,
-            x1: 0,
-            y2: ctx.canvas.height,
-            x2: ctx.canvas.width / 3
-        })
+    <script src="./includes/build/crypto.js"></script>
+    <script>
+        const str = `Hola... adios.`;
 
-
-        var background = new Image();
-        background.src = "./1.jpg"
-
-        background.onload = function() {
-            ctx.drawImage(background, 0, 0)
-        }
-
-        var background_left = new Image()
-        background_left.src = "./2.jpg"
-        var background_right = new Image()
-        background_right.src = "./3.jpg"
-
-        canvas.addEventListener('mousemove', function(event) {
-            var x = event.offsetX
-            var left_zone = ctx.canvas.width - (ctx.canvas.width / 3)
-            var right_zine = canvas
-
-            if (x < canvas.offsetWidth / 3) {
-                ctx.drawImage(background_left, 0, 0)
-            } else {
-                ctx.drawImage(background, 0, 0)
-            }
-        })
+        const cryptoInfo = CryptoJS.AES.encrypt(JSON.stringify({
+            str
+        }), 'secret');
+        console.log(cryptoInfo);
+        const info2 = CryptoJS.AES.decrypt(str, 'secret')
+        console.log(info2);
+        console.log(info2.toString(CryptoJS.enc.Utf8))
     </script>
-    <div id="grid">
-        <div class="item"></div>
-        <div class="item"></div>
-        <div class="item"></div>
-    </div>
-    <script type="text/javascript">
-        var items = document.getElementsByClassName('item')
-        var grid = document.getElementById('grid')
-        for (let i = 0; i < items.length; i++) {
-            items[i].addEventListener('mouseover', function(event) {
-                if (i == 0 || i == 3 || i == 6) {
-                    console.log('izq')
-                    grid.style.backgroundImage = "url(./1.jpg)"
-                } else if (i == 1 || i == 4 || i == 7) {
-                    console.log('cntr')
-                    grid.style.backgroundImage = "url(./4.jpg)"
-                } else {
-                    console.log('dir')
-                    grid.style.backgroundImage = "url(./3.jpg)"
-                }
-            })
-        }
-    </script>
-
 </body>
 
 </html>

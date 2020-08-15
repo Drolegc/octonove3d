@@ -37,7 +37,7 @@ function init(gltfData) {
         BABYLON.SceneLoader.ShowLoadingScreen = false
         BABYLON.SceneLoader.Append("", "data:" + gltfData, scene,
             function() {
-                //scene.CreateDefaultCamera(true, true, true);
+                scene.createDefaultCamera(true, true, true);
                 //scene.clearColor = new BABYLON.Color4
             },
             function() {

@@ -323,7 +323,6 @@ class AdminClass {
     private function delete_data_from_db($models_name){
         global $wpdb;
         
-        $usuario_logueado = 
         $db = self::NOMBRE_BD;
         $model = $wpdb->get_row(
             "SELECT * FROM $db WHERE models_name = '$models_name';"

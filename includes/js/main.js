@@ -5,7 +5,7 @@ export default class {
         this.nameId = nameId
         this.cant = cant
 
-        this.getModel().then((data) => this.init(data));
+        this.getModel();
     }
 
     init(gltfData) {
@@ -17,11 +17,10 @@ export default class {
         var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); };
         var createScene = function() {
             var scene = new BABYLON.Scene(engine);
-
+            //SceneLoader.ShowLoadingScreen = false;
             BABYLON.SceneLoader.Append("", "data:" + gltfData, scene, function() {
                     scene.createDefaultCamera(true, true, true);
                     scene.activeCamera.alpha += Math.PI / 2;
-                    SceneLoader.ShowLoadingScreen = false;
                 },
                 function() {
                     console.log("### Progress ...")
@@ -70,16 +69,33 @@ export default class {
     async getModel() {
 
         var model = ""
-        for (var i = 0; i < this.cant; i++) {
+        var parts = []
+        var sumaTotal = 0
+        var sumaAuxiliar = 0
+        for (let n = 0; n < this.cant; n++) {
+            sumaTotal += n
+        }
+        console.log(sumaTotal)
+
+        var self = this
+
+        for (let i = 0; i < this.cant; i++) {
             var url = window.location
             var host = url.protocol + "//" + url.host
             host = 'http://localhost/wordpress/wordpress-5.3.2-es_UY/wordpress'
-            var response = axios.get(host + '/wp-json/octonove3d/v1/model?m=' + this.path + '&p=' + i).catch((error) => console.error(error))
-            console.log(response.data)
-            var data = this.Decrypt('condiment coach hypnoses doornail', response.data)
-            model += data
+            axios.get(host + '/wp-json/octonove3d/v1/model?m=' + this.path + '&p=' + i)
+                .then((response) => {
+                    parts[i] = atob(self.Decrypt('condiment coach hypnoses doornail', response.data))
+                    sumaAuxiliar += i
+                    if (sumaAuxiliar == sumaTotal) {
+                        self.init(parts.join(''))
+                    }
+                })
+                .catch((error) => console.error(error))
+
         }
-        return model
+
+
     }
 
 
