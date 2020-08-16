@@ -51,25 +51,26 @@ function init(gltfData) {
 
 
         scene.executeWhenReady(function() {
-            BABYLON.Tools.CreateScreenshotUsingRenderTarget(engine, scene.activeCamera, { width: 500, height: 300 }, function(img) {
-                setTimeout(function() {
+            setTimeout(function() {
+                BABYLON.Tools.CreateScreenshotUsingRenderTarget(engine, scene.activeCamera, { width: 500, height: 300 }, function(img) {
                     document.getElementById('dir_img').value = img
                     document.getElementById('upload_btn').value = "Cargando."
-
-                }, 2 * 1000)
-                setTimeout(function() {
+                })
+            }, 2 * 1000)
+            setTimeout(function() {
+                BABYLON.Tools.CreateScreenshotUsingRenderTarget(engine, scene.activeCamera, { width: 500, height: 300 }, function(img) {
                     document.getElementById('cntr_img').value = img
                     document.getElementById('upload_btn').value = "Cargando.."
-
-                }, 7 * 1000)
-                setTimeout(function() {
-                    document.getElementById('upload_btn').value = "Cargando..."
+                })
+            }, 7 * 1000)
+            setTimeout(function() {
+                BABYLON.Tools.CreateScreenshotUsingRenderTarget(engine, scene.activeCamera, { width: 500, height: 300 }, function(img) {
                     document.getElementById('izq_img').value = img
-                    document.getElementById('upload_btn').disabled = false
                     document.getElementById('upload_btn').value = "Upload"
-                }, 12 * 1000)
+                    document.getElementById('upload_btn').disabled = false
 
-            })
+                })
+            }, 12 * 1000)
         })
 
         scene.registerBeforeRender(function() {

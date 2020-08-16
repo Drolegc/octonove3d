@@ -11,6 +11,7 @@ class AdminClass {
         add_shortcode( 'octonove3d', array($this,'shortcode') );
         add_shortcode( 'set_octonove3d', array($this,'set_configurations_shortcode'));
         add_shortcode( 'octonove3d_new_model', array($this, 'new_model'));
+        add_shortcode( 'octonove3d_preview_card',array($this, 'preview_card'));
 
         // Add CSS
         add_action( 'wp_enqueue_scripts',array($this,'register_css'));
@@ -105,6 +106,56 @@ class AdminClass {
         }
         
         return "Shortcode Error";
+    }
+
+    public function preview_card($atts){
+
+        // Show all users models
+        if(isset($atts['user'])){
+            
+            $models = $this->getModelsUser($atts['user']);
+            $response = "";
+            foreach ($models as $model) {
+
+                $file_name = end(explode('uploads',$model->path_file));
+                $file_name = end(explode('/',$file_name));
+                $time_id = microtime();
+                $response = $response."
+                <div class='preview-card' id='".$model->models_name.$time_id."-preview-card'>
+                <div class='preview-card-child'></div>
+                <div class='preview-card-child'></div>
+                <div class='preview-card-child'></div>
+                </div>
+                <script type='module'>
+                import initPreview from '".plugins_url( 'includes/js/preview-card.js',__FILE__ )."';
+                
+                initPreview('".$model->models_name.$time_id."-preview-card','".$model->izq_img."','".$model->cntr_img."','".$model->dir_img."');
+                </script>
+                ";
+            }
+            return $response;
+        }
+
+        if (isset($atts['name'])) {
+
+            $model = $this->getModel($atts['name']);
+            $file_name = end(explode('uploads',$model->path_file));
+            $file_name = end(explode('/',$file_name));
+            
+            return
+            "
+            <div class='preview-card' id='".$model->models_name."-preview-card'>
+                <div class='preview-card-child'></div>
+                <div class='preview-card-child'></div>
+                <div class='preview-card-child'></div>
+            </div>
+            <script type='module'>
+                import initPreview from '".plugins_url( 'includes/js/preview-card.js',__FILE__ )."';
+            
+                initPreview('".$model->models_name."','".$model->izq_img."','".$model->cntr_img."','".$model->dir_img."');
+            </script>
+            ";
+        }
     }
 
     private function getModel($models_name){
