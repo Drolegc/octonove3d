@@ -1,29 +1,33 @@
 export default function(divId, izq_img, cntr_img, dir_img) {
 
-    var div = document.getElementById(divId)
-    var children = div.childNodes
-    div.style.backgroundImage = "url(" + cntr_img + ")"
+    let canvas = document.getElementById(divId)
+    let context = canvas.getContext("2d")
+    let width = canvas.width
+    let height = canvas.height
 
-    div.addEventListener('mouseleave', function(e) {
-        div.style.backgroundImage = "url(" + cntr_img + ")"
-    })
-
-    for (let i = 0; i < children.length; i++) {
-        children[i].addEventListener("mouseover", function(event) {
-            console.log(i)
-            switch (i) {
-                case 1:
-                    div.style.backgroundImage = "url(" + izq_img + ")"
-                    break;
-                case 3:
-                    div.style.backgroundImage = "url(" + cntr_img + ")"
-                    break;
-                case 5:
-                    div.style.backgroundImage = "url(" + dir_img + ")"
-                    break;
-                default:
-                    console.error("Error cargando preview_card")
-            }
-        })
+    let izq_img_canvas = new Image()
+    izq_img_canvas.onload = function() {
+        context.drawImage(izq_img_canvas, 0, 0, width, height)
     }
+    izq_img_canvas.src = izq_img
+
+    let cntr_img_canvas = new Image()
+    cntr_img_canvas.src = cntr_img
+
+    let dir_img_canvas = new Image()
+    dir_img_canvas.src = dir_img
+
+    canvas.addEventListener('mousemove', function(e) {
+        var x = e.offsetX
+        var y = e.offsetY
+        var sections_distance = canvas.width / 3
+        if (x < sections_distance) {
+            context.drawImage(izq_img_canvas, 0, 0, width, height)
+        } else if (x > sections_distance && x < sections_distance * 2) {
+            context.drawImage(cntr_img_canvas, 0, 0, width, height)
+        } else {
+            context.drawImage(dir_img_canvas, 0, 0, width, height)
+
+        }
+    })
 }

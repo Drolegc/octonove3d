@@ -121,16 +121,15 @@ class AdminClass {
                 $file_name = end(explode('/',$file_name));
                 $time_id = microtime();
                 $response = $response."
-                <div class='preview-card' id='".$model->models_name.$time_id."-preview-card'>
-                <div class='preview-card-child'></div>
-                <div class='preview-card-child'></div>
-                <div class='preview-card-child'></div>
-                </div>
+                <div class='preview-card'>
+                <canvas class='preview-card-canvas' id='".$model->models_name.$time_id."-preview-card'></canvas>
+                <div class='preview-card-details'><span class='preview-card-models-name'>".$model->models_name."</span><span class='preview-card-models-by'>By ".$model->user."</span></div>
                 <script type='module'>
                 import initPreview from '".plugins_url( 'includes/js/preview-card.js',__FILE__ )."';
                 
                 initPreview('".$model->models_name.$time_id."-preview-card','".$model->izq_img."','".$model->cntr_img."','".$model->dir_img."');
                 </script>
+                </div>
                 ";
             }
             return $response;

@@ -29,16 +29,15 @@ function init(gltfData) {
 
     var createScene = function() {
         var scene = new BABYLON.Scene(engine);
-        camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, 0, 0, BABYLON.Vector3.Zero(), scene);
-        camera.setPosition(new BABYLON.Vector3(0, 0.5, -4));
+        //camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, 0, 0, BABYLON.Vector3.Zero(), scene);
+        //camera.setPosition(new BABYLON.Vector3(0, 0.5, -4));
 
-        camera.attachControl(canvas, false);
+        //camera.attachControl(canvas, false);
 
         BABYLON.SceneLoader.ShowLoadingScreen = false
         BABYLON.SceneLoader.Append("", "data:" + gltfData, scene,
             function() {
-                scene.createDefaultCamera(true, true, true);
-                //scene.clearColor = new BABYLON.Color4
+                scene.createDefaultCamera(true, true, false);
             },
             function() {
                 console.log("### Loading 3d models")
@@ -74,11 +73,8 @@ function init(gltfData) {
         })
 
         scene.registerBeforeRender(function() {
-            let mesh = scene.getMeshByName('__root__')
-            if (mesh) {
-                mesh.rotationQuaternion = null
-                mesh.rotation.y += 0.005
-            }
+
+            scene.activeCamera.alpha += 0.005
         })
 
         return scene;
