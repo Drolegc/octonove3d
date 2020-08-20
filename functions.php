@@ -53,27 +53,22 @@ function fsplit($file,$buffer=1024,$dir_path="splits/"){
 /** 
  * Delete directory with files inside
 */
-function deleteDirectory($dir) {
-    if (!file_exists($dir)) {
-        return true;
-    }
-
-    if (!is_dir($dir)) {
-        return unlink($dir);
-    }
-
-    foreach (scandir($dir) as $item) {
-        if ($item == '.' || $item == '..') {
-            continue;
+function deleteDirectory($dirname) {
+    if (is_dir($dirname))
+      $dir_handle = opendir($dirname);
+    if (!$dir_handle)
+        return false;
+    while($file = readdir($dir_handle)) {
+        if ($file != "." && $file != "..") {
+            if (!is_dir($dirname."/".$file))
+                    unlink($dirname."/".$file);
+            else
+                    delete_directory($dirname.'/'.$file);
         }
-
-        if (!deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)) {
-            return false;
-        }
-
     }
-
-    return rmdir($dir);
+    closedir($dir_handle);
+    rmdir($dirname);
+    return true;
 }
 
 function Encrypt($passphrase, $plain_text){

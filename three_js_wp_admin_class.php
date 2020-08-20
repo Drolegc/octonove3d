@@ -138,21 +138,27 @@ class AdminClass {
         if (isset($atts['name'])) {
 
             $model = $this->getModel($atts['name']);
-            $file_name = end(explode('uploads',$model->path_file));
-            $file_name = end(explode('/',$file_name));
+
+            if($model == null) {
+                return 
+                "
+                <div class='preview-card'>
+                <div class='preview-card-details'><p style='font-weight: bold;'>Error - no existe modelo con el nombre dado</p></div>
+                </div>
+                ";
+            }
             
             return
             "
-            <div class='preview-card' id='".$model->models_name."-preview-card'>
-                <div class='preview-card-child'></div>
-                <div class='preview-card-child'></div>
-                <div class='preview-card-child'></div>
-            </div>
-            <script type='module'>
+            <div class='preview-card'>
+                <canvas class='preview-card-canvas' id='".$model->models_name.$time_id."-preview-card'></canvas>
+                <div class='preview-card-details'><span class='preview-card-models-name'>".$model->models_name."</span><span class='preview-card-models-by'>By ".$model->user."</span></div>
+                <script type='module'>
                 import initPreview from '".plugins_url( 'includes/js/preview-card.js',__FILE__ )."';
-            
-                initPreview('".$model->models_name."','".$model->izq_img."','".$model->cntr_img."','".$model->dir_img."');
-            </script>
+                
+                initPreview('".$model->models_name.$time_id."-preview-card','".$model->izq_img."','".$model->cntr_img."','".$model->dir_img."');
+                </script>
+                </div>
             ";
         }
     }
@@ -214,7 +220,7 @@ class AdminClass {
                 <input type='text' id='model_name' name='model_name' value="<?php echo $model->models_name?>" />
                 <label for='path'>Path </label>
                 <input type='text' id='path' name='path' value="<?php echo "uploads".end($split);?>" />
-                <input type="button" value="Delete" onclick="checkBeforeDeleteModel()">
+                <input type="submit" value="Delete">
             </form>
             <?php
         }
@@ -264,10 +270,23 @@ class AdminClass {
                 }
 
                 $upload_info = wp_get_upload_dir();
-                $model_file = explode('uploads',$_POST['path']);
-                $file = $upload_info['basedir'] . end($model_file);
+                $model_file = explode('/',$_POST['path']);
+                $file = $upload_info['basedir'] .'/'. $model_file[1];
+                deleteDirectory($file);
+                
+                $model = $this->getModel($_POST['model_name']);
 
-                wp_delete_file( $file );
+                $path_izq_img = explode('uploads', $model->izq_img);
+                $path_izq_img = wp_upload_dir()['basedir'].'/'.end($path_izq_img);
+                wp_delete_file($path_izq_img);
+
+                $path_cntr_img = explode('uploads', $model->cntr_img);
+                $path_cntr_img = wp_upload_dir()['basedir'].'/'.end($path_cntr_img);
+                wp_delete_file($path_cntr_img);
+
+                $path_dir_img = explode('uploads', $model->dir_img);
+                $path_dir_img = wp_upload_dir()['basedir'].'/'.end($path_dir_img);
+                wp_delete_file($path_dir_img);
 
                 $wpdb->query(
                     "DELETE FROM octonove3d_safe WHERE models_name = '".$_POST['model_name']."';"
@@ -337,6 +356,10 @@ class AdminClass {
             // Guardamos nombre del modelo y path
             $this->upload_data_to_db($models_name,$dir_file,$data_file_count["count"],$file_izq_img['tmp_name'],$file_cntr_img['tmp_name'],$file_dir_img['tmp_name']);
             
+            // Delete aux file
+
+            wp_delete_file($file_uploaded['file']);
+
             echo "<br><b style='color:green;'> File upload successful! </b>";
         }
     }
