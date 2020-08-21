@@ -10,9 +10,11 @@
                     <h2>Como subir un modelo</h2>
                     <ul>
                         <li>
-                            Dado que el plugin solo acepta .babylon como extension, es necasario importar el modelo que se tenga al <a href="https://sandbox.babylonjs.com/">sandbox de BabylonJS</a>, y exportarlo como .babylon
+                            Dado que el plugin solo acepta .babylon como extension, es necasario importar el modelo que se tenga al <a target="_blank" rel="noopener noreferrer" href="https://sandbox.babylonjs.com/">sandbox de BabylonJS</a>, y exportarlo como .babylon
                         </li>
-                        <li>Una vez que se tenga el modelo .babylon, ir al menu, New Model, llenar el formulario y dar subir</li>
+                        <li>
+                            Una vez que se tenga el modelo .babylon, ir al menu, New Model, llenar el formulario y dar subir
+                        </li>
                     </ul>
                 </li>
                 <li>

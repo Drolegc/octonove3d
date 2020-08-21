@@ -65,7 +65,7 @@ class AdminClass {
                 $file_name = end(explode('uploads',$model->path_file));
                 $file_name = end(explode('/',$file_name));
                 $response = $response."
-                <div id='". $model->models_name."' class='".$this->getClassCSS($atts)."'>
+                <div id='". $model->models_name."' class='model-card ".$this->getClassCSSPreview($atts)."'>
                 <canvas id='". $model->models_name."-canvas'></canvas>
                 <div class='details'>
                     <p>".ucfirst($model->models_name)."</p>
@@ -89,19 +89,30 @@ class AdminClass {
             
             return
             "
-            <div id='". $atts['name']."' class='".$this->getClassCSS($atts)."'>
-                <canvas id='". $atts['name']."-canvas'></canvas>
+            <div id='". $atts['name']."' class='model-card'>
+                <div class='model-section'>
+                    <div class='loading' id='".$atts['name']."-loading'>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <canvas id='". $atts['name']."-canvas'></canvas>
+                </div>
                 <div class='details'>
                     <p>".ucfirst($atts['name'])."</p>
                     <small>".$model->user."</small>
                 </div>
+                <script type='module' defer>
+                import init from '".plugins_url( 'includes/js/main.js',__FILE__ )."';
+                
+                new init('".$file_name."','". $atts['name']."','".$model->cant."');
+                </script>
             </div>
             
-            <script type='module' defer>
-            import init from '".plugins_url( 'includes/js/main.js',__FILE__ )."';
-            
-            new init('".$file_name."','". $atts['name']."-canvas','".$model->cant."');
-            </script>
             ";
         }
         
@@ -114,7 +125,17 @@ class AdminClass {
         if(isset($atts['user'])){
             
             $models = $this->getModelsUser($atts['user']);
-            $response = "";
+            
+            if($model == null) {
+                return 
+                "
+                <div class='preview-card'>
+                <div class='preview-card-details'><p style='font-weight: bold;'>Error - el usuario no tiene modelos</p></div>
+                </div>
+                ";
+            }
+
+            $response = "<div class='".$this->getClassCSSPreview($atts)."'>";
             foreach ($models as $model) {
 
                 $file_name = end(explode('uploads',$model->path_file));
@@ -132,6 +153,7 @@ class AdminClass {
                 </div>
                 ";
             }
+            $response = $response."</div>";
             return $response;
         }
 
@@ -184,7 +206,7 @@ class AdminClass {
         return $models;
     }
 
-    private function getClassCSS($atts){
+    private function getClassCSSModel($atts){
         if(!isset($atts['style'])) return 'model-card';
 
         switch($atts['style']){
@@ -195,6 +217,20 @@ class AdminClass {
                 return 'model-card';
         }
         
+    }
+
+    private function getClassCSSPreview($atts){
+
+        if(!isset($atts['list'])) return '';
+
+        switch($atts['list']){
+            case 'horizontal':
+                return 'preview-list preview-list-horizontal';
+            case 'vertical':
+                return 'preview-list preview-list-vertical';
+            default:
+            return '';
+        }
     }
 
     public function list_models(){

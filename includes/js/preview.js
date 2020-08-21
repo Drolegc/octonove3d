@@ -29,10 +29,6 @@ function init(gltfData) {
 
     var createScene = function() {
         var scene = new BABYLON.Scene(engine);
-        //camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, 0, 0, BABYLON.Vector3.Zero(), scene);
-        //camera.setPosition(new BABYLON.Vector3(0, 0.5, -4));
-
-        //camera.attachControl(canvas, false);
 
         BABYLON.SceneLoader.ShowLoadingScreen = false
         BABYLON.SceneLoader.Append("", "data:" + gltfData, scene,
@@ -55,7 +51,7 @@ function init(gltfData) {
                     document.getElementById('dir_img').value = img
                     document.getElementById('upload_btn').value = "Cargando."
                 })
-            }, 2 * 1000)
+            }, 0.5 * 1000)
             setTimeout(function() {
                 BABYLON.Tools.CreateScreenshotUsingRenderTarget(engine, scene.activeCamera, { width: 500, height: 300 }, function(img) {
                     document.getElementById('cntr_img').value = img

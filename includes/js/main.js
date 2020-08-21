@@ -9,18 +9,20 @@ export default class {
     }
 
     init(gltfData) {
-        var canvas = document.getElementById(this.nameId);
+        var canvas = document.getElementById(this.nameId + '-canvas');
 
+        var self = this
         var engine = null;
         var scene = null;
         var sceneToRender = null;
         var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); };
         var createScene = function() {
-            var scene = new BABYLON.Scene(engine);
-            //SceneLoader.ShowLoadingScreen = false;
+            var scene = new BABYLON.Scene(engine)
+            BABYLON.SceneLoader.ShowLoadingScreen = false
+            document.getElementById(self.nameId + '-loading').style.display = 'none'
             BABYLON.SceneLoader.Append("", "data:" + gltfData, scene, function() {
-                    scene.createDefaultCamera(true, true, true);
-                    scene.activeCamera.alpha += Math.PI / 2;
+                    scene.createDefaultCamera(true, true, true)
+                    scene.activeCamera.alpha += Math.PI / 2
                 },
                 function() {
                     console.log("### Progress ...")
@@ -75,7 +77,6 @@ export default class {
         for (let n = 0; n < this.cant; n++) {
             sumaTotal += n
         }
-        console.log(sumaTotal)
 
         var self = this
 
