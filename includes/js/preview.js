@@ -9,6 +9,9 @@ fileSelector.addEventListener('change', (event) => {
 })
 
 function leerElArchivoSeleccionado(event) {
+
+    document.getElementsByClassName('model-section')[0].style.display = 'block'
+
     const reader = new FileReader()
     reader.onload = (event) => {
         data_model = event.target.result
@@ -22,7 +25,6 @@ function init(gltfData) {
 
     var engine = null
     var scene = null
-    var camera = null
 
     var sceneToRender = null
     var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); };
@@ -49,20 +51,25 @@ function init(gltfData) {
             setTimeout(function() {
                 BABYLON.Tools.CreateScreenshotUsingRenderTarget(engine, scene.activeCamera, { width: 500, height: 300 }, function(img) {
                     document.getElementById('dir_img').value = img
-                    document.getElementById('upload_btn').value = "Cargando."
+                    document.getElementById('upload_btn').value = "Creando snapshots del modelo (1/3)"
                 })
             }, 0.5 * 1000)
             setTimeout(function() {
                 BABYLON.Tools.CreateScreenshotUsingRenderTarget(engine, scene.activeCamera, { width: 500, height: 300 }, function(img) {
                     document.getElementById('cntr_img').value = img
-                    document.getElementById('upload_btn').value = "Cargando.."
+                    document.getElementById('upload_btn').value = "Creando snapshots del modelo (2/3)"
                 })
             }, 7 * 1000)
             setTimeout(function() {
                 BABYLON.Tools.CreateScreenshotUsingRenderTarget(engine, scene.activeCamera, { width: 500, height: 300 }, function(img) {
                     document.getElementById('izq_img').value = img
-                    document.getElementById('upload_btn').value = "Upload"
-                    document.getElementById('upload_btn').disabled = false
+                    document.getElementById('upload_btn').value = "Creando snapshots del modelo (3/3)"
+                    setTimeout(function() {
+                        document.getElementById('upload_btn').value = "Upload"
+                        document.getElementById('upload_btn').disabled = false
+
+                        document.getElementById('preview-loading').style.display = "none"
+                    }, 500)
 
                 })
             }, 12 * 1000)

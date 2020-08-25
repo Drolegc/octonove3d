@@ -24,7 +24,6 @@
 
   function activate(){
 
-    
     global $wpdb;
 
     $charset_collate = $wpdb->get_charset_collate();

@@ -13,7 +13,7 @@
 
 .model-card canvas {
     width: 100%;
-    border-radius: 3% 3% 0% 0%;
+    border-radius: 10px 10px 0px 0px;
 }
 
 .details {
@@ -45,6 +45,8 @@
 
 .preview-card-details {
     padding: 5px;
+    display: flex;
+    justify-content: space-between;
 }
 
 .preview-card-models-name {
@@ -91,6 +93,19 @@
     background-color: rgba(155, 155, 155, 0.315);
 }
 
+.delete_btn {
+    color: red;
+    border-radius: 3px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+}
+
+.delete_btn:hover {
+    cursor: pointer;
+}
+
 
 /*
    * Loading Dots
@@ -102,12 +117,31 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(168, 168, 168, 0.199);
     border-radius: 10px 10px 0px 0px;
+}
+
+.new_model {
+    display: none;
+}
+
+.admin-dashboard {
+    width: 50%;
+    height: 50%;
+}
+
+.model-section canvas {
+    width: 100%;
+    height: 100%;
 }
 
 .loading {
     position: absolute;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(97, 97, 97, 0.336);
 }
 
 .loading span {

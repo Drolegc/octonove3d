@@ -16,12 +16,14 @@ class AdminClass {
         // Add CSS
         add_action( 'wp_enqueue_scripts',array($this,'register_css'));
         add_action( 'wp_enqueue_scripts',array($this, 'load_css'));
+        add_action('admin_enqueue_scripts', array($this,'add_css_to_new_model_on_dashboard'));
         
+        //Configuration
+        // add_filter('upload_mimes',array($this,'upload_mimes'),1,1);
         // Menus
         add_action( 'admin_menu', array($this,'menu_page') );
 
         // Endpoint
-
         add_action( 'rest_api_init' ,function(){
             register_rest_route('octonove3d/v1', '/model', array(
                 'methods' => 'GET',
@@ -38,6 +40,11 @@ class AdminClass {
     public function load_css(){
         wp_enqueue_style( 'modelscss' );
     }
+
+    // public function upload_mimes($mime_types){
+    //     $mime_types['babylon'] = 'application/octet-stream';
+    //     return $mime_types;
+    // }
 
     public function menu_page(){
         add_menu_page( 'Octonove3D', 'Octonove3D', 'manage_options', 'octonove3d-admin-menu',array($this,'help'), '', 200 );
@@ -121,16 +128,17 @@ class AdminClass {
 
     public function preview_card($atts){
 
-        // Show all users models
+        $this->handle_delete_model_user($atts);
+
         if(isset($atts['user'])){
             
             $models = $this->getModelsUser($atts['user']);
-            
-            if($model == null) {
+
+            if($models == null) {
                 return 
                 "
                 <div class='preview-card'>
-                <div class='preview-card-details'><p style='font-weight: bold;'>Error - el usuario no tiene modelos</p></div>
+                <div class='preview-card-details'><p style='font-weight: bold; color:red;'>Error - el usuario no tiene modelos</p></div>
                 </div>
                 ";
             }
@@ -141,19 +149,79 @@ class AdminClass {
                 $file_name = end(explode('uploads',$model->path_file));
                 $file_name = end(explode('/',$file_name));
                 $time_id = microtime();
+                $delete_btn = '';
+                if($model->user == wp_get_current_user()->user_login){
+                    $delete_btn = "<span class='delete_btn' onclick='checkBeforeDelete()'>X</span>";
+                }
                 $response = $response."
                 <div class='preview-card'>
-                <canvas class='preview-card-canvas' id='".$model->models_name.$time_id."-preview-card'></canvas>
-                <div class='preview-card-details'><span class='preview-card-models-name'>".$model->models_name."</span><span class='preview-card-models-by'>By ".$model->user."</span></div>
-                <script type='module'>
-                import initPreview from '".plugins_url( 'includes/js/preview-card.js',__FILE__ )."';
-                
-                initPreview('".$model->models_name.$time_id."-preview-card','".$model->izq_img."','".$model->cntr_img."','".$model->dir_img."');
-                </script>
+                    <canvas class='preview-card-canvas' id='".$model->models_name.$time_id."-preview-card'></canvas>
+                    <div class='preview-card-details'>
+                        <div><span class='preview-card-models-name'>".$model->models_name."</span><span class='preview-card-models-by'>By ".$model->user."</span></div>
+                        <form method='POST' action='' name='delete-model' id='delete-model' enctype='multipart/form-data'>
+                            <input type='hidden' name='model_name' id='model_name' value='".$model->models_name."'>
+                            ".$delete_btn."
+                        </form>
+                    </div>
+                    <script type='module'>
+                    import initPreview from '".plugins_url( 'includes/js/preview-card.js',__FILE__ )."';    
+                    
+                    initPreview('".$model->models_name.$time_id."-preview-card','".$model->izq_img."','".$model->cntr_img."','".$model->dir_img."');
+                    </script>
                 </div>
                 ";
             }
             $response = $response."</div>";
+            return $response;
+        }
+
+        if(isset($atts['current_user'])){
+
+            if(!$atts['current_user']) return;
+            
+            $current_user = wp_get_current_user()->user_login;
+
+            $models = $this->getModelsUser($current_user);
+
+            if($models == null) {
+                return 
+                "
+                <div class='preview-card'>
+                <div class='preview-card-details'><p style='font-weight: bold; color:red;'>Error - el usuario no tiene modelos</p></div>
+                </div>
+                ";
+            }
+
+            $response = "<div class='".$this->getClassCSSPreview($atts)."'>";
+            foreach ($models as $model) {
+
+                $file_name = end(explode('uploads',$model->path_file));
+                $file_name = end(explode('/',$file_name));
+                $time_id = microtime();
+                $delete_btn = '';
+                if($model->user == wp_get_current_user()->user_login){
+                    $delete_btn = "<span class='delete_btn' onclick='checkBeforeDelete(this)'>X</span>";
+                }
+                $response = $response."
+                <div class='preview-card'>
+                    <canvas class='preview-card-canvas' id='".$model->models_name.$time_id."-preview-card'></canvas>
+                    <div class='preview-card-details'>
+                        <div><span class='preview-card-models-name'>".$model->models_name."</span><span class='preview-card-models-by'>By ".$model->user."</span></div>
+                        <form method='POST' action='' name='delete-model' enctype='multipart/form-data'>
+                            <input type='hidden' name='model_name' id='model_name' value='".$model->models_name."'>
+                            ".$delete_btn."
+                        </form>
+                    </div>
+                    <script type='module'>
+                    import initPreview from '".plugins_url( 'includes/js/preview-card.js',__FILE__ )."';    
+                    
+                    initPreview('".$model->models_name.$time_id."-preview-card','".$model->izq_img."','".$model->cntr_img."','".$model->dir_img."');
+                    </script>
+                </div>
+                ";
+            }
+            $response = $response."</div>";
+            $response = $response."<script src='".plugins_url( 'includes/js/functions.js',__FILE__ )."'></script>";
             return $response;
         }
 
@@ -181,7 +249,58 @@ class AdminClass {
                 initPreview('".$model->models_name.$time_id."-preview-card','".$model->izq_img."','".$model->cntr_img."','".$model->dir_img."');
                 </script>
                 </div>
+                <script src='".plugins_url( 'includes/js/functions_list_models.js',__FILE__ )."'></script>
             ";
+        }
+    }
+
+    private function handle_delete_model_user($atts){
+
+        if(isset($_POST['model_name'])){
+            $current_user = wp_get_current_user()->user_login;
+            global $wpdb;
+            try{
+
+                if(!$this->check_model_exists($_POST['model_name'])){
+                    echo "<b style='color:red;'>Este modelo no existe</b>";
+                    return;
+                }
+
+                $models_name = $_POST['model_name'];
+                $model =  $wpdb->get_row(
+                    "SELECT * FROM octonove3d_safe WHERE models_name = '$models_name' AND user = '$current_user' ;"
+                );
+
+                if($model == null){
+                    echo "<b style='color:red;'>El usuario no tiene un modelo con el nombre dado</b>";
+                    return;
+                }
+
+                $upload_info = wp_get_upload_dir();
+                $model_file = explode('uploads/',$model->path_file);
+                $file = $upload_info['basedir'] .'/'. $model_file[1];
+                deleteDirectory($file);
+
+                $path_izq_img = explode('uploads', $model->izq_img);
+                $path_izq_img = wp_upload_dir()['basedir'].'/'.end($path_izq_img);
+                wp_delete_file($path_izq_img);
+
+                $path_cntr_img = explode('uploads', $model->cntr_img);
+                $path_cntr_img = wp_upload_dir()['basedir'].'/'.end($path_cntr_img);
+                wp_delete_file($path_cntr_img);
+
+                $path_dir_img = explode('uploads', $model->dir_img);
+                $path_dir_img = wp_upload_dir()['basedir'].'/'.end($path_dir_img);
+                wp_delete_file($path_dir_img);
+
+                $wpdb->query(
+                    "DELETE FROM octonove3d_safe WHERE models_name = '".$_POST['model_name']."';"
+                );
+
+                echo "Models deleted";
+            }catch (Exception $e){
+                throw new Exception("Model ".$_POST['model_name']."does not exist.");
+            }
         }
     }
 
@@ -199,10 +318,10 @@ class AdminClass {
     private function getModelsUser($username){
         global $wpdb;
 
-        $db = self::NOMBRE_BD;
         $models = $wpdb->get_results(
-            "SELECT * FROM $db WHERE user = '$username';"
+            "SELECT * FROM octonove3d_safe WHERE user = '$username';"
         );
+
         return $models;
     }
 
@@ -268,12 +387,19 @@ class AdminClass {
     }
 
     public function new_model(){
-       
+
         if( !is_user_logged_in() ) return;
 
         $this->new_model_handle_post();
 
+        $css_admin = '';
+
+        if(is_admin()){
+            $css_admin = 'admin-dashboard';
+        }
+
         ?>
+        
         <div id="new_model">
          <h2>
              New Model
@@ -287,7 +413,20 @@ class AdminClass {
          <input type="hidden"  id="dir_img" name="dir_img"  required>
          <input type="submit" value="Upload" id="upload_btn" disabled>
          </form>
-         <canvas id="preview" width="500px" height="300px"></canvas>
+         <div class="model-section  <?php echo $css_admin?> new_model">
+            <div class='loading' id='preview-loading'>
+                <div>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+            <canvas id="preview" width="500px" height="300px"></canvas>
+         </div>
         </div>
         <script src='<?php echo plugins_url( 'includes/build/babylon.js',__FILE__ ) ?>'></script>
         <script src='<?php echo plugin_dir_url( __FILE__ ).'includes/js/preview.js' ?>'></script>
@@ -337,6 +476,7 @@ class AdminClass {
 
     private function new_model_handle_post(){
 
+        require_once(ABSPATH . 'wp-admin/includes/file.php');
 
         if(isset($_FILES['upload_json'])){
 
@@ -355,7 +495,7 @@ class AdminClass {
             $file_uploaded = wp_handle_upload($model_json,$overrides);
 
             if(isset($file_uploaded["error"])){
-                echo "<b style='color:red'>Error subiendo img: ".$file_uploaded["error"]."</b>";
+                echo "<b style='color:red'>Error subiendo modelo: ".$file_uploaded["error"]."</b>";
                 return;
             }
 
@@ -472,7 +612,9 @@ class AdminClass {
         return $file;
     }
 
-
+    public function add_css_to_new_model_on_dashboard(){
+        wp_enqueue_style('admin-styles', plugin_dir_url( __FILE__ ).'includes/css/style.css');
+    }
 
 }
 
