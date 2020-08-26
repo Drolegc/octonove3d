@@ -2,9 +2,6 @@ export default function(divId, izq_img, cntr_img, dir_img) {
 
     let canvas = document.getElementById(divId)
 
-    canvas.width = canvas.offsetWidth
-    canvas.height = canvas.offsetHeight
-
     let context = canvas.getContext("2d")
     let width = canvas.width
     let height = canvas.height

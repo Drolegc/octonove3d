@@ -25,8 +25,15 @@
                         </li>
                         <li>
                             octonove_3d ( muestra el modelo que se especifique, de lo contrario mostrara error).
-                            </br><b>Parametros obligatorios</b>: name (nombre del modelo que ya se haya guardado en la base de datos)
-                            </br><b>Parametros opcionales</b>: style (opciones: card,all-screen) ; user ( nombre de un usuario registrado, si se usa esta opcion no es necesario hacer uso del parametro name)
+                            </br><b>Parametros</b>: name (nombre del modelo que ya se haya guardado en la base de datos)
+                        </li>
+                        <li>
+                            octonove3d_new_model ( formulario para subir un modelo )
+                        </li>
+                        <li>
+                            octonove3d_preview_card (pre vista del modelo)
+                            </br><b>Parametros</b>: user ( muestra una lista de pre vistas de los modelos del usuairo especificado )</br>current_user ( muestra una lista de pre vistas de los modelos del usuario logueado) </br> name (muestra una prevista del modelo especificado)
+
                         </li>
                     </ul>
                 </li>

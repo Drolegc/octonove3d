@@ -17,9 +17,7 @@ class AdminClass {
         add_action( 'wp_enqueue_scripts',array($this,'register_css'));
         add_action( 'wp_enqueue_scripts',array($this, 'load_css'));
         add_action('admin_enqueue_scripts', array($this,'add_css_to_new_model_on_dashboard'));
-        
-        //Configuration
-        // add_filter('upload_mimes',array($this,'upload_mimes'),1,1);
+
         // Menus
         add_action( 'admin_menu', array($this,'menu_page') );
 
@@ -41,11 +39,6 @@ class AdminClass {
         wp_enqueue_style( 'modelscss' );
     }
 
-    // public function upload_mimes($mime_types){
-    //     $mime_types['babylon'] = 'application/octet-stream';
-    //     return $mime_types;
-    // }
-
     public function menu_page(){
         add_menu_page( 'Octonove3D', 'Octonove3D', 'manage_options', 'octonove3d-admin-menu',array($this,'help'), '', 200 );
         add_submenu_page( 'octonove3d-admin-menu', 'list-models', 'Models list', 'manage_options', 'list_models_slug', array($this,'list_models'), null);
@@ -62,31 +55,6 @@ class AdminClass {
     }
 
     public function shortcode($atts){
-        
-        if(isset($atts['user'])){
-            
-            $models = $this->getModelsUser($atts['user']);
-            $response = "";
-            foreach ($models as $model) {
-
-                $file_name = end(explode('uploads',$model->path_file));
-                $file_name = end(explode('/',$file_name));
-                $response = $response."
-                <div id='". $model->models_name."' class='model-card ".$this->getClassCSSPreview($atts)."'>
-                <canvas id='". $model->models_name."-canvas'></canvas>
-                <div class='details'>
-                    <p>".ucfirst($model->models_name)."</p>
-                </div>
-                </div>
-                <script type='module'>
-                import init from '".plugins_url( 'includes/js/main.js',__FILE__ )."';
-                
-                new init('".$file_name."','". $model->models_name."-canvas','".$model->cant."');
-                </script>
-                ";
-            }
-            return $response;
-        }
 
         if (isset($atts['name'])) {
 
@@ -110,8 +78,7 @@ class AdminClass {
                     <canvas id='". $atts['name']."-canvas'></canvas>
                 </div>
                 <div class='details'>
-                    <p>".ucfirst($atts['name'])."</p>
-                    <small>".$model->user."</small>
+                <span class='preview-card-models-name'>".$model->models_name."</span><span class='preview-card-models-by'>By ".$model->user."</span>
                 </div>
                 <script type='module' defer>
                 import init from '".plugins_url( 'includes/js/main.js',__FILE__ )."';
@@ -204,7 +171,7 @@ class AdminClass {
                 }
                 $response = $response."
                 <div class='preview-card'>
-                    <canvas class='preview-card-canvas' id='".$model->models_name.$time_id."-preview-card'></canvas>
+                    <canvas class='preview-card-canvas' id='".$model->models_name.$time_id."-preview-card' ></canvas>
                     <div class='preview-card-details'>
                         <div><span class='preview-card-models-name'>".$model->models_name."</span><span class='preview-card-models-by'>By ".$model->user."</span></div>
                         <form method='POST' action='' name='delete-model' enctype='multipart/form-data'>
@@ -242,14 +209,15 @@ class AdminClass {
             "
             <div class='preview-card'>
                 <canvas class='preview-card-canvas' id='".$model->models_name.$time_id."-preview-card'></canvas>
-                <div class='preview-card-details'><span class='preview-card-models-name'>".$model->models_name."</span><span class='preview-card-models-by'>By ".$model->user."</span></div>
+                <div class='preview-card-details'>
+                    <span class='preview-card-models-name'>".$model->models_name."</span><span class='preview-card-models-by'>By ".$model->user."</span>
+                </div>
                 <script type='module'>
                 import initPreview from '".plugins_url( 'includes/js/preview-card.js',__FILE__ )."';
                 
                 initPreview('".$model->models_name.$time_id."-preview-card','".$model->izq_img."','".$model->cntr_img."','".$model->dir_img."');
                 </script>
                 </div>
-                <script src='".plugins_url( 'includes/js/functions_list_models.js',__FILE__ )."'></script>
             ";
         }
     }
@@ -361,7 +329,6 @@ class AdminClass {
             "SELECT * FROM octonove3d_safe"
         );
         
-        echo "<script src='".plugin_dir_url( __FILE__ ).'includes/js/functions_list_models.js'."'></script>";
         echo "<h2> List of models </h2>";
         echo "<div>";
         if(empty($models)){
@@ -371,12 +338,14 @@ class AdminClass {
             $split = explode('uploads',$model->path_file);
             ?>
             <form action="" method='post' name='myform' id="myform" enctype='multipart/form-data'>
+                <p for="user">User: <b><?php echo $model->user ?></b> |</p>
                 <label for='model_name'>Name </label>
                 <input type='text' id='model_name' name='model_name' value="<?php echo $model->models_name?>" />
                 <label for='path'>Path </label>
                 <input type='text' id='path' name='path' value="<?php echo "uploads".end($split);?>" />
-                <input type="submit" value="Delete">
+                <button>Delete</button>
             </form>
+            <hr>
             <?php
         }
         echo "</div>";
@@ -405,16 +374,16 @@ class AdminClass {
              New Model
          </h2>
          <form method='post' action='' id='myform' name='myform' enctype='multipart/form-data'>
-         <label for="model_name">Model's name </label>
-         <input type="text" id="model_name" name="model_name" required>
-         <input type="file" id='upload_json' name='upload_json' accept=".babylon" required>
-         <input type="hidden"  id="cntr_img" name="cntr_img"  required>
-         <input type="hidden"  id="izq_img" name="izq_img"  required>
-         <input type="hidden"  id="dir_img" name="dir_img"  required>
-         <input type="submit" value="Upload" id="upload_btn" disabled>
+            <label for="model_name">Model's name </label>
+            <input type="text" id="model_name" name="model_name" required>
+            <input type="file" id='upload_json' name='upload_json' accept=".babylon" required>
+            <input type="hidden"  id="cntr_img" name="cntr_img"  required>
+            <input type="hidden"  id="izq_img" name="izq_img"  required>
+            <input type="hidden"  id="dir_img" name="dir_img"  required>
+            <input type="submit" value="Upload" id="upload_btn" disabled>
          </form>
          <div class="model-section  <?php echo $css_admin?> new_model">
-            <div class='loading' id='preview-loading'>
+            <div class='loading opaco-bg' id='preview-loading'>
                 <div>
                     <span></span>
                     <span></span>
