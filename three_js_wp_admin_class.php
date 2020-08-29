@@ -57,16 +57,19 @@ class AdminClass {
     public function shortcode($atts){
 
         if (isset($atts['name'])) {
+            
+            $model_name = $atts['name'];
 
-            $model = $this->getModel($atts['name']);
+            $model = $this->getModel($model_name);
             $file_name = end(explode('uploads',$model->path_file));
             $file_name = end(explode('/',$file_name));
+
             
             return
             "
-            <div id='". $atts['name']."' class='model-card'>
+            <div id='". $model_name."' class='model-card'>
                 <div class='model-section'>
-                    <div class='loading' id='".$atts['name']."-loading'>
+                    <div class='loading' id='".$model_name."-loading'>
                         <span></span>
                         <span></span>
                         <span></span>
@@ -75,7 +78,7 @@ class AdminClass {
                         <span></span>
                         <span></span>
                     </div>
-                    <canvas id='". $atts['name']."-canvas'></canvas>
+                    <canvas id='". $model_name."-canvas'></canvas>
                 </div>
                 <div class='details'>
                 <span class='preview-card-models-name'>".$model->models_name."</span><span class='preview-card-models-by'>By ".$model->user."</span>
@@ -83,7 +86,50 @@ class AdminClass {
                 <script type='module' defer>
                 import init from '".plugins_url( 'includes/js/main.js',__FILE__ )."';
                 
-                new init('".$file_name."','". $atts['name']."','".$model->cant."');
+                new init('".$file_name."','". $model_name."','".$model->cant."');
+                </script>
+            </div>
+            
+            ";
+        }
+
+        if (isset($atts['from-url'])) {
+            
+            if(!isset($_GET['model'])) return;
+            if($_GET['model'] == '') return;
+
+            $model_name = $_GET['model'];
+
+            $model = $this->getModel($model_name);
+
+            if($model == NULL) return;
+
+            $file_name = end(explode('uploads',$model->path_file));
+            $file_name = end(explode('/',$file_name));
+
+            
+            return
+            "
+            <div id='". $model_name."' class='model-card'>
+                <div class='model-section'>
+                    <div class='loading' id='".$model_name."-loading'>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <canvas id='". $model_name."-canvas'></canvas>
+                </div>
+                <div class='details'>
+                <span class='preview-card-models-name'>".$model->models_name."</span><span class='preview-card-models-by'>By ".$model->user."</span>
+                </div>
+                <script type='module' defer>
+                import init from '".plugins_url( 'includes/js/main.js',__FILE__ )."';
+                
+                new init('".$file_name."','". $model_name."','".$model->cant."');
                 </script>
             </div>
             
@@ -133,7 +179,7 @@ class AdminClass {
                     <script type='module'>
                     import initPreview from '".plugins_url( 'includes/js/preview-card.js',__FILE__ )."';    
                     
-                    initPreview('".$model->models_name.$time_id."-preview-card','".$model->izq_img."','".$model->cntr_img."','".$model->dir_img."');
+                    initPreview('".$model->models_name.$time_id."-preview-card','".$model->izq_img."','".$model->cntr_img."','".$model->dir_img."','".$model->models_name."');
                     </script>
                 </div>
                 ";
@@ -182,7 +228,7 @@ class AdminClass {
                     <script type='module'>
                     import initPreview from '".plugins_url( 'includes/js/preview-card.js',__FILE__ )."';    
                     
-                    initPreview('".$model->models_name.$time_id."-preview-card','".$model->izq_img."','".$model->cntr_img."','".$model->dir_img."');
+                    initPreview('".$model->models_name.$time_id."-preview-card','".$model->izq_img."','".$model->cntr_img."','".$model->dir_img."','".$model->models_name."');
                     </script>
                 </div>
                 ";
@@ -215,7 +261,7 @@ class AdminClass {
                 <script type='module'>
                 import initPreview from '".plugins_url( 'includes/js/preview-card.js',__FILE__ )."';
                 
-                initPreview('".$model->models_name.$time_id."-preview-card','".$model->izq_img."','".$model->cntr_img."','".$model->dir_img."');
+                initPreview('".$model->models_name.$time_id."-preview-card','".$model->izq_img."','".$model->cntr_img."','".$model->dir_img."','".$model->models_name."');
                 </script>
                 </div>
             ";

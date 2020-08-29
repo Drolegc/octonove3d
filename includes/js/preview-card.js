@@ -1,4 +1,4 @@
-export default function(divId, izq_img, cntr_img, dir_img) {
+export default function(divId, izq_img, cntr_img, dir_img, models_name) {
 
     let canvas = document.getElementById(divId)
 
@@ -30,5 +30,13 @@ export default function(divId, izq_img, cntr_img, dir_img) {
             context.drawImage(dir_img_canvas, 0, 0, width, height)
 
         }
+    })
+
+    canvas.addEventListener('click', function(e) {
+        var url = window.location
+        var host = url.protocol + "//" + url.host + "/3d/?model=" + models_name
+        host = 'http://localhost/wordpress/wordpress-5.3.2-es_UY/wordpress' + "/3d/?model=" + models_name
+
+        window.open(host, '__blank')
     })
 }
