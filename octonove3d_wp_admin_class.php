@@ -4,7 +4,7 @@ include 'functions.php';
 
 class AdminClass {
 
-    const NOMBRE_BD = "octonove3d_safe";
+    const NOMBRE_BD = "octonove3d";
 
     public function __construct(){
         // Shortcode example    
@@ -282,7 +282,7 @@ class AdminClass {
 
                 $models_name = $_POST['model_name'];
                 $model =  $wpdb->get_row(
-                    "SELECT * FROM octonove3d_safe WHERE models_name = '$models_name' AND user = '$current_user' ;"
+                    "SELECT * FROM octonove3d WHERE models_name = '$models_name' AND user = '$current_user' ;"
                 );
 
                 if($model == null){
@@ -308,7 +308,7 @@ class AdminClass {
                 wp_delete_file($path_dir_img);
 
                 $wpdb->query(
-                    "DELETE FROM octonove3d_safe WHERE models_name = '".$_POST['model_name']."';"
+                    "DELETE FROM octonove3d WHERE models_name = '".$_POST['model_name']."';"
                 );
 
                 echo "Models deleted";
@@ -333,7 +333,7 @@ class AdminClass {
         global $wpdb;
 
         $models = $wpdb->get_results(
-            "SELECT * FROM octonove3d_safe WHERE user = '$username';"
+            "SELECT * FROM octonove3d WHERE user = '$username';"
         );
 
         return $models;
@@ -372,7 +372,7 @@ class AdminClass {
 
         global $wpdb;
         $models = $wpdb->get_results(
-            "SELECT * FROM octonove3d_safe"
+            "SELECT * FROM octonove3d"
         );
         
         echo "<h2> List of models </h2>";
@@ -479,7 +479,7 @@ class AdminClass {
                 wp_delete_file($path_dir_img);
 
                 $wpdb->query(
-                    "DELETE FROM octonove3d_safe WHERE models_name = '".$_POST['model_name']."';"
+                    "DELETE FROM octonove3d WHERE models_name = '".$_POST['model_name']."';"
                 );
 
                 echo "Models deleted";
@@ -592,7 +592,7 @@ class AdminClass {
             "SELECT * FROM $db WHERE models_name = '$models_name';"
         );
 
-        $table = "octonove3d_safe";
+        $table = "octonove3d";
         $wpdb->delete($table, array( 'models_name' => $models_name ));
 
     }

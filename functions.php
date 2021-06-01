@@ -95,7 +95,7 @@ function getModelData( WP_REST_Request $model){
 
     $model_id = $_GET['m'];
     $model = $wpdb->get_row(
-        "SELECT path_file, cant FROM octonove3d_safe WHERE octonove3d_safe.path_file LIKE '%$model_id%';"
+        "SELECT path_file, cant FROM octonove3d WHERE octonove3d.path_file LIKE '%$model_id%';"
     );
 
     if($model == null){
@@ -119,8 +119,13 @@ function getModelData( WP_REST_Request $model){
     fclose($open_file);
 
     $encrypted_content = Encrypt('condiment coach hypnoses doornail',$content);
+    $compressed_content = gzencode(json_encode($encrypted_content),9);
 
-    return $encrypted_content;
+    header('Content-Type: application/json');
+    header('Content-Encoding: gzip'); 
+    header('Content-Length: ' . strlen($compressed_content));
+    
+    echo $compressed_content;
 }
 
 ?>

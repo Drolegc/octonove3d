@@ -1,16 +1,16 @@
 <?php
   /*
   
-  Plugin name: 3DMODEL OCTONOVE SAFE
+  Plugin name: OCTONOVE 3D
   Plugin URI: http://PLUGIN_URI.com/
-  Description: Babylon JS with Wordpress 
+  Description: Plugin oficial de Octonove para mostrar modelos 3D mediante Babylon JS en Wordpress 
   Author: Octonove Agency
   Author URI: http://AUTHOR_URI.com
   Version: 1.5
   */
   if( ! defined('ABSPATH' )) die;
 
-  $path = dirname(__FILE__).'/three_js_wp_admin_class.php';
+  $path = dirname(__FILE__).'/octonove3d_wp_admin_class.php';
   if( !file_exists($path)) die("NO EXISTE EL ARCHIVO");
   require_once $path;
 
@@ -28,7 +28,7 @@
 
     $charset_collate = $wpdb->get_charset_collate();
 
-    $sql = "CREATE TABLE octonove3d_safe (
+    $sql = "CREATE TABLE octonove3d (
         user varchar(55) NOT NULL,
         models_name varchar(55) NOT NULL,
         path_file varchar(300) NOT NULL,
@@ -51,7 +51,7 @@
 
   function uninstall(){
     global $wpdb;
-     $table_name = $wpdb->prefix . 'octonove3d_safe';
+     $table_name = $wpdb->prefix . 'octonove3d';
      $sql = "DROP TABLE IF EXISTS $table_name";
      $wpdb->query($sql);
   }
