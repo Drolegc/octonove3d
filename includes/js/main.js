@@ -79,30 +79,49 @@ export default class {
         }
 
         var self = this
+        let hosts = []
 
         for (let i = 0; i < this.cant; i++) {
             var url = window.location
             var host = url.protocol + "//" + url.host
             host = 'http://localhost/wordpress/wordpress-5.3.2-es_UY/wordpress'
-            axios.get(
-                    host + '/wp-json/octonove3d/v1/model?m=' + this.path + '&p=' + i, {
-                        headers: {
-                            'Content-Encoding': 'gzip'
-                        }
+            const request = axios.get(
+                host + '/wp-json/octonove3d/v1/model?m=' + this.path + '&p=' + i, {
+                    headers: {
+                        'Content-Encoding': 'gzip'
                     }
-                )
-                .then((response) => {
+                }
+            )
 
-                    parts[i] = atob(self.Decrypt('condiment coach hypnoses doornail', response.data))
-                    sumaAuxiliar += i
-                    if (sumaAuxiliar == sumaTotal) {
-                        self.init(parts.join(''))
-                    }
-                })
-                .catch((error) => console.error(error))
+            hosts.push(request)
+                // axios.get(
+                //         host + '/wp-json/octonove3d/v1/model?m=' + this.path + '&p=' + i, {
+                //             headers: {
+                //                 'Content-Encoding': 'gzip'
+                //             }
+                //         }
+                //     )
+                //     .then((response) => {
+
+            //         parts[i] = atob(self.Decrypt('condiment coach hypnoses doornail', response.data))
+            //         sumaAuxiliar += i
+            //         if (sumaAuxiliar == sumaTotal) {
+            //             self.init(parts.join(''))
+            //         }
+            //     })
+            //     .catch((error) => console.error(error))
 
         }
 
+        axios.all(hosts)
+            .then(axios.spread((...responses) => {
+                console.log("Empezando")
+                for (let i = 0; i < responses.length; i++) {
+                    parts[i] = atob(self.Decrypt('condiment coach hypnoses doornail', responses[i].data))
+                }
+                self.init(parts.join(''))
+            }))
+            .catch((error) => console.error(error))
 
     }
 
