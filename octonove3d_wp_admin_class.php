@@ -86,7 +86,7 @@ class AdminClass {
                 <script type='module' defer>
                 import init from '".plugins_url( 'includes/js/main.js',__FILE__ )."';
                 
-                new init('".$file_name."','". $model_name."','".$model->cant."');
+                new init('".$file_name."','". $model_name."','".$model->cant."','".$model->cntr_img."');
                 </script>
             </div>
             
@@ -129,7 +129,7 @@ class AdminClass {
                 <script type='module' defer>
                 import init from '".plugins_url( 'includes/js/main.js',__FILE__ )."';
                 
-                new init('".$file_name."','". $model_name."','".$model->cant."');
+                new init('".$file_name."','". $model_name."','".$model->cant."','".$model->cntr_img."');
                 </script>
             </div>
             

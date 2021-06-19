@@ -1,15 +1,17 @@
 export default class {
 
-    constructor(path, nameId, cant) {
+    constructor(path, nameId, cant, img) {
         this.path = path
         this.nameId = nameId
         this.cant = cant
+        this.img = img
 
         this.getModel();
     }
 
     init(gltfData) {
         var canvas = document.getElementById(this.nameId + '-canvas');
+        //canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
 
         var self = this
         var engine = null;
@@ -116,6 +118,7 @@ export default class {
         axios.all(hosts)
             .then(axios.spread((...responses) => {
                 console.log("Empezando")
+                    //self.preview()
                 for (let i = 0; i < responses.length; i++) {
                     parts[i] = atob(self.Decrypt('condiment coach hypnoses doornail', responses[i].data))
                 }
@@ -125,6 +128,19 @@ export default class {
 
     }
 
+    preview() {
+        let canvas = document.getElementById(this.nameId + '-canvas');
 
+        let context = canvas.getContext("2d")
+        let width = canvas.width
+        let height = canvas.height
+
+        let img = new Image()
+        img.onload = function() {
+            context.drawImage(img, 0, 0, width, height)
+        }
+        img.src = this.img
+
+    }
 
 }
